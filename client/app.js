@@ -105,12 +105,16 @@ class Root extends React.Component {
     });
   };
 
-  typeHandler = ({ username, roomName = '' }, stopTyping) => {
+  typeHandler = ({ username, roomName = '', direct }, stopTyping) => {
     const typeRoom = this.state.rooms.find((r) => r.name === roomName);
     const typedUser = stopTyping ? '' : username;
     const typingRoom = stopTyping ? {} : typeRoom;
 
-    this.setState({ typedUser, typingRoom });
+    if (direct) {
+      this.setState({ typedUser, directTyping: !stopTyping });
+    } else {
+      this.setState({ typedUser, typingRoom });
+    }
   };
 
   sendMessage = (message) => {
@@ -196,6 +200,7 @@ class Root extends React.Component {
       username,
       typedUser,
       typingRoom,
+      directTyping,
       isUserNameSet
     } = this.state;
 
@@ -224,6 +229,8 @@ class Root extends React.Component {
           <OnlineUserList
             users={users}
             username={username}
+            directTyping={directTyping}
+            typedUser={typedUser}
             subscribedUser={subscribedUser}
             subscribeToUser={this.subscribeToUser}
           />

@@ -20,13 +20,13 @@ const MessageSchema = new Schema({
     required: true,
     ref: 'User'
   },
-  isDirectMessage: {
+  isPrivateMessage: {
     type: Boolean,
     default: false
   }
 });
 
-async function updateUserDirectMessage(userId, messageId) {
+async function updateUserPrivateMessage(userId, messageId) {
   const User = mongoose.model('User');
 
   try {
@@ -47,15 +47,15 @@ MessageSchema.statics.privateMessage = async function(params) {
   try {
     const newMessage = await new this({
       message,
-      isDirectMessage: true,
+      isPrivateMessage: true,
       createdBy: userId
     }).save();
     const withOwner = await this.findById(newMessage._id).populate({
       path: 'createdBy',
       model: 'User'
     });
-    await updateUserDirectMessage(userId, newMessage._id);
-    await updateUserDirectMessage(directUserId, newMessage._id);
+    await updateUserPrivateMessage(userId, newMessage._id);
+    await updateUserPrivateMessage(directUserId, newMessage._id);
 
     return withOwner;
   } catch (error) {

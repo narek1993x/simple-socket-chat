@@ -78,10 +78,9 @@ io.on('connection', async function(socket) {
         });
       case 'private-message':
         const newPrivateMessage = await Message.privateMessage(body);
-
-        console.log('Sending: ' + body.message + ' to ' + body.username);
         return directAction(body.username, action, newPrivateMessage);
-      // Create room action
+
+      // Create new room action
       case 'room':
         const newRoom = await Room.createRoom(body);
 
@@ -89,6 +88,7 @@ io.on('connection', async function(socket) {
           action,
           response: newRoom
         });
+
       // Subscribing actions
       case 'subscribe room':
         const currentRoom = await Room.findById(body.id).populate({
@@ -122,6 +122,7 @@ io.on('connection', async function(socket) {
       case 'leave room':
         // Leave room
         return socket.leave(body.roomName);
+
       // User adding actions
       case 'add user':
         if (addedUser) return;
@@ -153,11 +154,13 @@ io.on('connection', async function(socket) {
             users
           }
         });
+
       // Type handling actions
       case 'typing':
         if (body.isDirect) {
           return directAction(body.username, action, {
-            username: socket.username
+            username: socket.username,
+            direct: true
           });
         }
         return socket.to(body.roomName).emit('response', {
@@ -170,7 +173,8 @@ io.on('connection', async function(socket) {
       case 'stop typing':
         if (body.isDirect) {
           return directAction(body.username, action, {
-            username: socket.username
+            username: socket.username,
+            direct: true
           });
         }
         return socket.to(body.roomName).emit('response', {
