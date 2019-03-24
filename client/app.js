@@ -8,6 +8,7 @@ import OnlineUserList from './components/OnlineUserList';
 import MessageList from './components/MessageList';
 import SendMessageForm from './components/SendMessageForm';
 import NewRoomForm from './components/NewRoomForm';
+import Auth from './components/Auth';
 
 class Root extends React.Component {
   state = {
@@ -20,20 +21,22 @@ class Root extends React.Component {
     username: localStorage.getItem('username') || '',
     typedUser: '',
     directTyping: false,
+    breakTypingAnimation: false,
     typingRoom: null,
     roomName: '',
     roomId: null,
-    isUserNameSet: false
+    isUserNameSet: false,
+    error: ''
   };
 
   componentDidMount = () => {
     if (this.state.username) {
-      this.setUserName('', true);
+      // this.handleUserLogin('', true);
     } else {
       this.username.focus();
     }
 
-    socket.on('response', ({ action, response }) => {
+    socket.on('response', ({ action, response, error }) => {
       switch (action) {
         case 'message':
           return this.setNewItemByKey(response, 'messages');
@@ -55,14 +58,21 @@ class Root extends React.Component {
           return this.typeHandler(response);
         case 'stop typing':
           return this.typeHandler(response, true);
+        case 'error':
+          return this.setState({ error });
         default:
           break;
       }
     });
   };
 
-  loginHandler = ({ users, rooms, currentUser }) => {
-    this.setState({ users, rooms, currentUser });
+  loginHandler = ({ users, rooms, currentUser, error }) => {
+    const username = currentUser && currentUser.username;
+    if (username) {
+      localStorage.setItem('username', username);
+    }
+
+    this.setState({ users, rooms, currentUser, username, isUserNameSet: !!username, error: '' });
   };
 
   userJoinLeftHandler = ({ users }) => {
@@ -111,9 +121,9 @@ class Root extends React.Component {
     const typingRoom = stopTyping ? {} : typeRoom;
 
     if (direct) {
-      this.setState({ typedUser, directTyping: !stopTyping });
+      this.setState({ typedUser, directTyping: !stopTyping, breakTypingAnimation: false });
     } else {
-      this.setState({ typedUser, typingRoom });
+      this.setState({ typedUser, typingRoom, breakTypingAnimation: false });
     }
   };
 
@@ -144,8 +154,7 @@ class Root extends React.Component {
       };
     }
 
-    const newItemKey =
-      subscribedUser && subscribedUser._id ? 'privateMessages' : 'messages';
+    const newItemKey = subscribedUser && subscribedUser._id ? 'privateMessages' : 'messages';
     this.setNewItemByKey({ message, username }, newItemKey);
     socket.emit('query', emitData);
   };
@@ -168,24 +177,24 @@ class Root extends React.Component {
 
   setNewItemByKey = (item, key) => {
     if (!item) return;
+
     this.setState((prevState) => ({
-      [key]: [...prevState[key], item]
+      [key]: [...prevState[key], item],
+      breakTypingAnimation: ['messages', 'privateMessages'].includes(key)
     }));
   };
 
-  setUserName = (e, fromStorage) => {
-    if (e.keyCode === 13 || fromStorage) {
-      const username = this.username.value || this.state.username;
+  handleUserAuth = ({ username, password, email, isSignin }) => {
+    if (!username || !password || (!isSignin && !email)) return;
 
-      const emitData = {
-        action: 'add user',
-        body: { username }
-      };
+    const emitData = {
+      action: 'add user',
+      body: { isSignin, username, password, ...(!isSignin ? { email } : {}) }
+    };
 
-      this.setState({ isUserNameSet: true, username });
-      !fromStorage && localStorage.setItem('username', username);
-      socket.emit('query', emitData);
-    }
+    // this.setState({ isUserNameSet: true, username });
+    // !fromStorage && localStorage.setItem('username', username);
+    socket.emit('query', emitData);
   };
 
   render() {
@@ -200,36 +209,26 @@ class Root extends React.Component {
       username,
       typedUser,
       typingRoom,
+      breakTypingAnimation,
       directTyping,
-      isUserNameSet
+      isUserNameSet,
+      error
     } = this.state;
 
     const subscribedUserId = subscribedUser && subscribedUser._id;
     const subscribedUserName = subscribedUser && subscribedUser.username;
 
-    let content = (
-      <div className="username-input">
-        <h2>What's your nickname?</h2>
-        <input
-          type="text"
-          ref={(node) => (this.username = node)}
-          onKeyDown={this.setUserName}
-        />
-      </div>
-    );
+    let content = <Auth onHandleUserAuth={this.handleUserAuth} error={error} />;
 
     if (isUserNameSet) {
       content = (
-        <React.Fragment>
-          <RoomList
-            rooms={rooms}
-            currentRoomId={roomId}
-            subscribeToRoom={this.subscribeToRoom}
-          />
+        <div className="app">
+          <RoomList rooms={rooms} currentRoomId={roomId} subscribeToRoom={this.subscribeToRoom} />
           <OnlineUserList
             users={users}
             username={username}
             directTyping={directTyping}
+            breakTypingAnimation={breakTypingAnimation}
             typedUser={typedUser}
             subscribedUser={subscribedUser}
             subscribeToUser={this.subscribeToUser}
@@ -239,6 +238,7 @@ class Root extends React.Component {
             subscribedUserName={subscribedUserName}
             typedUser={typedUser}
             typingRoom={typingRoom}
+            breakTypingAnimation={breakTypingAnimation}
             privateMessages={privateMessages}
             messages={messages}
             currentUserId={username}
@@ -250,11 +250,11 @@ class Root extends React.Component {
             subscribedUserName={subscribedUserName}
           />
           <NewRoomForm createRoom={this.createRoom} />
-        </React.Fragment>
+        </div>
       );
     }
 
-    return <div className="app">{content}</div>;
+    return content;
   }
 }
 

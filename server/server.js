@@ -40,16 +40,24 @@ function directAction(username, action, response) {
   }
 }
 
+async function requestMaker(Model, action, params, username) {
+  try {
+    return await Model[action](params);
+  } catch (error) {
+    io.sockets.connected[clients[username].socket].emit('response', {
+      action: 'error',
+      error: error.toString()
+    });
+    throw error;
+  }
+}
+
 io.on('connection', async function(socket) {
   let addedUser = false;
 
   socket.on('disconnect', async () => {
     if (addedUser) {
-      await User.findOneAndUpdate(
-        { username: socket.username },
-        { $set: { online: false } },
-        { new: true }
-      );
+      await User.findOneAndUpdate({ username: socket.username }, { $set: { online: false } }, { new: true });
       socket.broadcast.emit('response', {
         action: 'user left',
         response: {
@@ -126,18 +134,33 @@ io.on('connection', async function(socket) {
       // User adding actions
       case 'add user':
         if (addedUser) return;
-        socket.username = body.username;
-        addedUser = true;
+        socket.username = body.username.toLowerCase();
 
         // add new client for using direct messages
         clients[socket.username] = {
           socket: socket.id
         };
 
-        await User.loginUser({ username: socket.username });
+        if (body.isSignin) {
+          await requestMaker(
+            User,
+            'signinUser',
+            { username: socket.username, password: body.password },
+            socket.username
+          );
+        } else {
+          await requestMaker(
+            User,
+            'signupUser',
+            { username: socket.username, password: body.password, email: body.email },
+            socket.username
+          );
+        }
+
         const rooms = await Room.find({});
         const users = await User.find({});
         const currentUser = users.find((u) => u.username === socket.username);
+        addedUser = true;
 
         socket.emit('response', {
           action: 'login',

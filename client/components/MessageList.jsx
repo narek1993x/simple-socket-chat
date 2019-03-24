@@ -6,8 +6,7 @@ import Message from './Message';
 class MessageList extends React.Component {
   componentWillUpdate() {
     const node = ReactDOM.findDOMNode(this);
-    this.shouldScrollToBottom =
-      node.scrollTop + node.clientHeight + 100 >= node.scrollHeight;
+    this.shouldScrollToBottom = node.scrollTop + node.clientHeight + 100 >= node.scrollHeight;
   }
 
   componentDidUpdate() {
@@ -16,6 +15,7 @@ class MessageList extends React.Component {
       node.scrollTop = node.scrollHeight;
     }
   }
+
   render() {
     const {
       messages,
@@ -24,10 +24,10 @@ class MessageList extends React.Component {
       typedUser,
       typingRoom,
       roomId,
-      subscribedUserName
+      subscribedUserName,
+      breakTypingAnimation
     } = this.props;
-    const isType =
-      (typingRoom && typingRoom._id === roomId) || subscribedUserName === typedUser;
+    const isType = (typingRoom && typingRoom._id === roomId) || subscribedUserName === typedUser;
 
     if (!roomId && !subscribedUserName) {
       return (
@@ -53,8 +53,8 @@ class MessageList extends React.Component {
             />
           );
         })}
-        {isType && (
-          <span className="message-type">
+        {!breakTypingAnimation && isType && (
+          <span className="message-type" style={{ maxWidth: typedUser.legnth * 25 }}>
             <p className="type">...{typedUser} is typing</p>
           </span>
         )}

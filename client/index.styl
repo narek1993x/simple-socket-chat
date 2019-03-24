@@ -167,24 +167,31 @@ form
   top 10px
 
 .username-input
-  position absolute
-  top calc(50% - 80px)
-  left calc(50% - 15vw)
+  position relative
+  top calc(50% - 150px)
+  left calc(50% - 250px)
   display flex
   flex-direction column
   align-items center
   justify-content space-around
-  height 30vh
-  width 30vw
+  height 300px
+  width 500px
   border 1px solid var(--main-text-color)
   color var(--main-text-color)
+  .switch-button 
+    position absolute
+    top 10px
+    left 360px
+  .error-text
+    color red
+    font-size 12px
   h2
     color  --main-text-color
     margin-bottom 0
   input
     width 20vw
     height 40px
-    margin-bottom 20px
+    margin 0px
     padding-left 5px
     font-size 26px
     text-align: center
@@ -195,13 +202,23 @@ form
     &:focus
       outline-width 0
 
+  button
+    background-color: #40A4C8;
+    border: none;
+    color: white;
+    cursor: pointer;  
+    width: 124px;
+    height: 25px;
+    font-size: 15px;
+    box-shadow: none;
+    opacity: 1; 
+
 .message-type
   background #cccccc
   margin 30px 5px
   padding 4px 8px
   display inline
   border-radius 8px
-  max-width 10vw
 
 .type
   padding 0
@@ -214,7 +231,35 @@ form
 
 @keyframes type
 	to
-		width: 120;
+		width: 130;
 
 	from
 		width: 0;
+
+.input-element
+  width: 90%;
+  line-height: 36px;
+  margin: 10px 0;
+  padding-left: 20px;
+
+  &:focus
+    outline: none;
+
+  &::-webkit-input-placeholder
+    font-size: 14px;
+    color: #c4c5c6;
+
+
+.error-message
+  align-self flex-start
+  margin: 0;
+  padding-left: 65px
+  font-size: 12px;
+  color: red;
+
+
+.inValid
+  background-color: rgb(241, 147, 147)
+
+  &::-webkit-input-placeholder
+    color: #000305;

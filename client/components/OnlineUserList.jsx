@@ -7,6 +7,7 @@ const OnlineUserList = (props) => {
     subscribeToUser,
     subscribedUser = {},
     directTyping,
+    breakTypingAnimation,
     typedUser
   } = props;
   const orderedUsers = [...users].sort((a, b) => a.id - b.id);
@@ -25,11 +26,9 @@ const OnlineUserList = (props) => {
           return (
             <li key={user._id} className={`user ${selected ? 'selected' : ''}`}>
               <a href="#" onClick={() => !current && subscribeToUser(user)}>
-                <span className={`status${user.online ? ' online' : ''}`}>
-                  {user.online ? '●' : '○'}
-                </span>
+                <span className={`status${user.online ? ' online' : ''}`}>{user.online ? '●' : '○'}</span>
                 {user.username} {current && ' (you)'}
-                {isType && <p className="type">......</p>}
+                {!breakTypingAnimation && isType && <p className="type">......</p>}
               </a>
             </li>
           );
