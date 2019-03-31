@@ -11,7 +11,8 @@ class Auth extends Component {
         id: 'username',
         elementConfig: {
           type: 'text',
-          placeholder: 'Username'
+          placeholder: 'Username',
+          ref: this.props.authInputRef
         },
         value: '',
         validation: {
@@ -88,7 +89,7 @@ class Auth extends Component {
   };
 
   handleInputsValidation = () => {
-    const fields = [...this.state.fields].filter((f) => (this.state.isSignin ? f.id !== 'email' : f));
+    const fields = [...this.state.fields];
 
     const updatedFields = fields.map((item) => ({
       ...item,
@@ -99,6 +100,7 @@ class Auth extends Component {
     let formIsValid = true;
 
     for (let inputIdentifier of updatedFields) {
+      if (this.state.isSignin && inputIdentifier.id === 'email') continue;
       const { valid } = inputIdentifier;
       formIsValid = typeof valid === 'boolean' && valid && formIsValid;
     }
@@ -137,10 +139,10 @@ class Auth extends Component {
   };
 
   render() {
-    let { isSignin, fields, error } = this.state;
+    let { isSignin, fields, error, isSubmit } = this.state;
 
     let form = fields
-      .filter((f) => (isSignin ? f.id !== 'email' : f))
+      .filter((f) => (isSignin ? f.id !== 'email' : true))
       .map((field) => (
         <Input
           key={field.id}
@@ -149,13 +151,14 @@ class Auth extends Component {
           isValid={field.valid}
           shouldValidate={field.validation}
           touched={field.touched}
+          submited={isSubmit}
           onChange={(e) => this.handleInputChange(e, field.id)}
         />
       ));
 
     return (
       <Fragment>
-        <form className="username-input" onSubmit={this.handleUserLogin}>
+        <form className="auth-form" onSubmit={this.handleUserLogin}>
           <h2>{isSignin ? 'Sign In' : 'Sign Up'}</h2>
           {form}
           {error && <p className="error-message">{error}</p>}

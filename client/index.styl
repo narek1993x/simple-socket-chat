@@ -166,7 +166,7 @@ form
   position absolute
   top 10px
 
-.username-input
+.auth-form
   position relative
   top calc(50% - 150px)
   left calc(50% - 250px)
@@ -185,22 +185,29 @@ form
   .error-text
     color red
     font-size 12px
-  h2
-    color  --main-text-color
-    margin-bottom 0
-  input
+  .input-element
     width 20vw
     height 40px
     margin 0px
     padding-left 5px
     font-size 26px
-    text-align: center
     color var(--main-text-color)
     border: none
     border-bottom 1px solid var(--main-text-color)
     box-shadow none
     &:focus
       outline-width 0
+      outline none
+    &::-webkit-input-placeholder
+      font-size 14px
+      color #c4c5c6
+    &.inValid
+      border-bottom-color: red;
+      &::-webkit-input-placeholder
+        color: red; 
+  h2
+    color  --main-text-color
+    margin-bottom 0
 
   button
     background-color: #40A4C8;
@@ -236,19 +243,6 @@ form
 	from
 		width: 0;
 
-.input-element
-  width: 90%;
-  line-height: 36px;
-  margin: 10px 0;
-  padding-left: 20px;
-
-  &:focus
-    outline: none;
-
-  &::-webkit-input-placeholder
-    font-size: 14px;
-    color: #c4c5c6;
-
 
 .error-message
   align-self flex-start
@@ -257,9 +251,3 @@ form
   font-size: 12px;
   color: red;
 
-
-.inValid
-  background-color: rgb(241, 147, 147)
-
-  &::-webkit-input-placeholder
-    color: #000305;

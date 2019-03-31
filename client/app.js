@@ -11,29 +11,36 @@ import NewRoomForm from './components/NewRoomForm';
 import Auth from './components/Auth';
 
 class Root extends React.Component {
-  state = {
-    messages: [],
-    privateMessages: [],
-    rooms: [],
-    users: [],
-    currentUser: {},
-    subscribedUser: null,
-    username: localStorage.getItem('username') || '',
-    typedUser: '',
-    directTyping: false,
-    breakTypingAnimation: false,
-    typingRoom: null,
-    roomName: '',
-    roomId: null,
-    isUserNameSet: false,
-    error: ''
-  };
+  constructor(props) {
+    super(props);
+
+    this.state = {
+      messages: [],
+      privateMessages: [],
+      rooms: [],
+      users: [],
+      currentUser: {},
+      subscribedUser: null,
+      username: '',
+      typedUser: '',
+      directTyping: false,
+      breakTypingAnimation: false,
+      typingRoom: null,
+      roomName: '',
+      roomId: null,
+      isUserNameSet: false,
+      error: ''
+    };
+
+    this.authInputRef = React.createRef();
+  }
 
   componentDidMount = () => {
-    if (this.state.username) {
-      // this.handleUserLogin('', true);
+    const userToken = localStorage.getItem('userToken');
+    if (userToken) {
+      this.handleUserAuthWithToken(userToken);
     } else {
-      this.username.focus();
+      this.authInputRef.current.focus();
     }
 
     socket.on('response', ({ action, response, error }) => {
@@ -66,10 +73,10 @@ class Root extends React.Component {
     });
   };
 
-  loginHandler = ({ users, rooms, currentUser, error }) => {
+  loginHandler = ({ users, rooms, currentUser, token }) => {
     const username = currentUser && currentUser.username;
-    if (username) {
-      localStorage.setItem('username', username);
+    if (token) {
+      localStorage.setItem('userToken', token);
     }
 
     this.setState({ users, rooms, currentUser, username, isUserNameSet: !!username, error: '' });
@@ -184,6 +191,15 @@ class Root extends React.Component {
     }));
   };
 
+  handleUserAuthWithToken = (token) => {
+    const emitData = {
+      action: 'login with token',
+      body: { token }
+    };
+
+    socket.emit('query', emitData);
+  };
+
   handleUserAuth = ({ username, password, email, isSignin }) => {
     if (!username || !password || (!isSignin && !email)) return;
 
@@ -218,7 +234,7 @@ class Root extends React.Component {
     const subscribedUserId = subscribedUser && subscribedUser._id;
     const subscribedUserName = subscribedUser && subscribedUser.username;
 
-    let content = <Auth onHandleUserAuth={this.handleUserAuth} error={error} />;
+    let content = <Auth authInputRef={this.authInputRef} onHandleUserAuth={this.handleUserAuth} error={error} />;
 
     if (isUserNameSet) {
       content = (
