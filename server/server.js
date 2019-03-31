@@ -170,11 +170,10 @@ io.on('connection', async function(socket) {
       // Login user with token
       case 'login with token':
         try {
-          const tokenUser = await loginSocket(socket, body.token);
+          const tokenUser = await loginSocket(socket, body.token, true);
           clients[tokenUser.username] = {
             socket: socket.id
           };
-          await User.findOneAndUpdate({ username: tokenUser.username }, { $set: { online: true } }, { new: true });
           addedUser = true;
         } catch (error) {
           console.error('Error when login with token: ', error);

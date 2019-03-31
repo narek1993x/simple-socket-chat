@@ -19,10 +19,15 @@ const getUser = async (token) => {
 };
 
 module.exports = {
-  loginSocket: async function(socket, token) {
-    const rooms = await Room.find({});
-    const users = await User.find({});
+  loginSocket: async function(socket, token, isFromToken) {
     const user = await getUser(token);
+
+    if (isFromToken) {
+      await User.findOneAndUpdate({ username: user.username }, { $set: { online: true } }, { new: true });
+    }
+
+    const users = await User.find({});
+    const rooms = await Room.find({});
 
     let currentUser;
     if (user && user.username) {
