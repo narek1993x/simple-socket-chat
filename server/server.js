@@ -5,6 +5,7 @@ const io = require('socket.io')(http);
 const mongoose = require('mongoose');
 mongoose.set('useFindAndModify', false);
 const models = require('./models');
+const { loginSocket } = require('./helpers');
 
 const User = mongoose.model('User');
 const Message = mongoose.model('Message');
@@ -141,15 +142,16 @@ io.on('connection', async function(socket) {
           socket: socket.id
         };
 
+        let token;
         if (body.isSignin) {
-          await requestMaker(
+          token = await requestMaker(
             User,
             'signinUser',
             { username: socket.username, password: body.password },
             socket.username
           );
         } else {
-          await requestMaker(
+          token = await requestMaker(
             User,
             'signupUser',
             { username: socket.username, password: body.password, email: body.email },
@@ -157,26 +159,28 @@ io.on('connection', async function(socket) {
           );
         }
 
-        const rooms = await Room.find({});
-        const users = await User.find({});
-        const currentUser = users.find((u) => u.username === socket.username);
-        addedUser = true;
-
-        socket.emit('response', {
-          action: 'login',
-          response: {
-            users,
-            rooms,
-            currentUser
-          }
-        });
-
-        return socket.broadcast.emit('response', {
-          action: 'user joined',
-          response: {
-            users
-          }
-        });
+        try {
+          addedUser = true;
+          await loginSocket(socket, token);
+        } catch (error) {
+          console.error('Error when add user: ', error);
+          addedUser = false;
+        }
+        break;
+      // Login user with token
+      case 'login with token':
+        try {
+          const tokenUser = await loginSocket(socket, body.token);
+          clients[tokenUser.username] = {
+            socket: socket.id
+          };
+          await User.findOneAndUpdate({ username: tokenUser.username }, { $set: { online: true } }, { new: true });
+          addedUser = true;
+        } catch (error) {
+          console.error('Error when login with token: ', error);
+          addedUser = false;
+        }
+        break;
 
       // Type handling actions
       case 'typing':
