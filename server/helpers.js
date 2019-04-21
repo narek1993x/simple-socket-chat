@@ -23,7 +23,11 @@ module.exports = {
     const user = await getUser(token);
 
     if (isFromToken) {
-      await User.findOneAndUpdate({ username: user.username }, { $set: { online: true } }, { new: true });
+      await User.findOneAndUpdate(
+        { username: user.username },
+        { $set: { online: true } },
+        { new: true }
+      );
     }
 
     const users = await User.find({});

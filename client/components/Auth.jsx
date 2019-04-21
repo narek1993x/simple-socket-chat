@@ -55,14 +55,20 @@ class Auth extends Component {
     isSubmit: false
   };
 
-  componentWillReceiveProps(nextProps) {
-    if (this.state.error !== nextProps.error) {
-      this.setState({ error: nextProps.error });
+  static getDerivedStateFromProps(nextProps, state) {
+    if (nextProps.error !== state.error) {
+      return {
+        error: nextProps.error
+      };
     }
+    return null;
   }
 
   handleSwitch = () => {
-    this.setState((prevState) => ({ isSignin: !prevState.isSignin, error: '' }), this.handleResetFields);
+    this.setState(
+      (prevState) => ({ isSignin: !prevState.isSignin, error: '' }),
+      this.handleResetFields
+    );
   };
 
   handleUserLogin = (e) => {
@@ -117,7 +123,9 @@ class Auth extends Component {
         return {
           ...field,
           value: e.target.value,
-          valid: this.state.isSubmit ? checkValidity(id, e.target.value, field.validation) : null
+          valid: this.state.isSubmit
+            ? checkValidity(id, e.target.value, field.validation)
+            : null
         };
       }
       return field;

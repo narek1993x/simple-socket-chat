@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { PureComponent } from 'react';
 import socket from '../socket';
 
-class SendMessageForm extends React.Component {
+class SendMessageForm extends PureComponent {
   state = {
     message: '',
     isTyping: false

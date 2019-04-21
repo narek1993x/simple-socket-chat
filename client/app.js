@@ -79,7 +79,14 @@ class Root extends React.Component {
       localStorage.setItem('userToken', token);
     }
 
-    this.setState({ users, rooms, currentUser, username, isUserNameSet: !!username, error: '' });
+    this.setState({
+      users,
+      rooms,
+      currentUser,
+      username,
+      isUserNameSet: !!username,
+      error: ''
+    });
   };
 
   userJoinLeftHandler = ({ users }) => {
@@ -128,7 +135,11 @@ class Root extends React.Component {
     const typingRoom = stopTyping ? {} : typeRoom;
 
     if (direct) {
-      this.setState({ typedUser, directTyping: !stopTyping, breakTypingAnimation: false });
+      this.setState({
+        typedUser,
+        directTyping: !stopTyping,
+        breakTypingAnimation: false
+      });
     } else {
       this.setState({ typedUser, typingRoom, breakTypingAnimation: false });
     }
@@ -161,7 +172,8 @@ class Root extends React.Component {
       };
     }
 
-    const newItemKey = subscribedUser && subscribedUser._id ? 'privateMessages' : 'messages';
+    const newItemKey =
+      subscribedUser && subscribedUser._id ? 'privateMessages' : 'messages';
     this.setNewItemByKey({ message, username }, newItemKey);
     socket.emit('query', emitData);
   };
@@ -234,12 +246,22 @@ class Root extends React.Component {
     const subscribedUserId = subscribedUser && subscribedUser._id;
     const subscribedUserName = subscribedUser && subscribedUser.username;
 
-    let content = <Auth authInputRef={this.authInputRef} onHandleUserAuth={this.handleUserAuth} error={error} />;
+    let content = (
+      <Auth
+        authInputRef={this.authInputRef}
+        onHandleUserAuth={this.handleUserAuth}
+        error={error}
+      />
+    );
 
     if (isUserNameSet) {
       content = (
         <div className="app">
-          <RoomList rooms={rooms} currentRoomId={roomId} subscribeToRoom={this.subscribeToRoom} />
+          <RoomList
+            rooms={rooms}
+            currentRoomId={roomId}
+            subscribeToRoom={this.subscribeToRoom}
+          />
           <OnlineUserList
             users={users}
             username={username}

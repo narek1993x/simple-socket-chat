@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { memo } from 'react';
 
-const OnlineUserList = (props) => {
+const OnlineUserList = memo((props) => {
   const {
     users,
     username,
@@ -26,7 +26,9 @@ const OnlineUserList = (props) => {
           return (
             <li key={user._id} className={`user ${selected ? 'selected' : ''}`}>
               <a href="#" onClick={() => !current && subscribeToUser(user)}>
-                <span className={`status${user.online ? ' online' : ''}`}>{user.online ? '●' : '○'}</span>
+                <span className={`status${user.online ? ' online' : ''}`}>
+                  {user.online ? '●' : '○'}
+                </span>
                 {user.username} {current && ' (you)'}
                 {!breakTypingAnimation && isType && <p className="type">......</p>}
               </a>
@@ -36,6 +38,6 @@ const OnlineUserList = (props) => {
       </ul>
     </div>
   );
-};
+});
 
 export default OnlineUserList;

@@ -58,7 +58,11 @@ io.on('connection', async function(socket) {
 
   socket.on('disconnect', async () => {
     if (addedUser) {
-      await User.findOneAndUpdate({ username: socket.username }, { $set: { online: false } }, { new: true });
+      await User.findOneAndUpdate(
+        { username: socket.username },
+        { $set: { online: false } },
+        { new: true }
+      );
       socket.broadcast.emit('response', {
         action: 'user left',
         response: {
@@ -171,6 +175,8 @@ io.on('connection', async function(socket) {
       case 'login with token':
         try {
           const tokenUser = await loginSocket(socket, body.token, true);
+          socket.username = tokenUser.username;
+
           clients[tokenUser.username] = {
             socket: socket.id
           };
@@ -189,6 +195,7 @@ io.on('connection', async function(socket) {
             direct: true
           });
         }
+
         return socket.to(body.roomName).emit('response', {
           action,
           response: {

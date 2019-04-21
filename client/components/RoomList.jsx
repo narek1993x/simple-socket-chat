@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { memo } from 'react';
 
-const RoomList = ({ rooms, subscribeToRoom, currentRoomId }) => {
+const RoomList = memo(({ rooms, subscribeToRoom, currentRoomId }) => {
   return (
     <div className="room-list">
       <ul>
@@ -18,6 +18,6 @@ const RoomList = ({ rooms, subscribeToRoom, currentRoomId }) => {
       </ul>
     </div>
   );
-};
+});
 
 export default RoomList;
