@@ -6,7 +6,7 @@ module.exports = {
   entry: ['babel-polyfill', './index.js'],
   output: {
     path: path.resolve(__dirname, 'dist'),
-    publicPath: '/',
+    publicPath: './',
     filename: '[name].bundle.js'
   },
   module: {
@@ -41,6 +41,7 @@ module.exports = {
       'process.env': {
         NODE_ENV: JSON.stringify('production')
       }
-    })
+    }),
+    new webpack.optimize.UglifyJsPlugin()
   ]
 };
