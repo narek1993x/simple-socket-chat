@@ -1,6 +1,6 @@
 import io from 'socket.io-client';
 
-const wsUri = 'ws://simple-socket-chat.narek1993x.now.sh/';
+const wsUri = 'ws://localhost:3001/';
 const socket = io(wsUri);
 
 const socketApi = {};
