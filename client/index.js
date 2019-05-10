@@ -6,6 +6,8 @@ import thunk from 'redux-thunk';
 import rootReducers from './store';
 import App from './app';
 
+import './index.styl';
+
 const composeEnhancers =
   process.env.NODE_ENV === 'development' && window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__
     ? window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__

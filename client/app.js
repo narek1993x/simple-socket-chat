@@ -1,7 +1,6 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import socket from './socket';
-import './index.styl';
 
 import RoomList from './components/RoomList';
 import OnlineUserList from './components/OnlineUserList';

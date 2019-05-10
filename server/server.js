@@ -1,3 +1,4 @@
+require('now-env');
 const express = require('express');
 const app = express();
 const http = require('http').Server(app);
@@ -12,18 +13,18 @@ const Message = mongoose.model('Message');
 const Room = mongoose.model('Room');
 
 // Local DB
-const MONGO_URI = `mongodb://localhost:27017/simple-socket-chat`;
+// const MONGO_URI = `mongodb://localhost:27017/simple-socket-chat`;
 const OPTS = {
   useNewUrlParser: true,
   useCreateIndex: true
 };
 
-if (!MONGO_URI) {
+if (!process.env.MONGO_URI) {
   throw new Error('You must provide a MongoLab URI');
 }
 
 mongoose.Promise = global.Promise;
-mongoose.connect(MONGO_URI, OPTS);
+mongoose.connect(process.env.MONGO_URI, OPTS);
 mongoose.connection
   .once('open', () => console.log('Connected to MongoLab instance.'))
   .on('error', (error) => console.log('Error connecting to MongoLab:', error));

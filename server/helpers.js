@@ -5,13 +5,12 @@ const Message = mongoose.model('Message');
 const Room = mongoose.model('Room');
 
 const jwt = require('jsonwebtoken');
-const { SECRET } = require('./config/config.json');
 
 // Verify JWT Token passed from client
 const getUser = async (token) => {
   if (token) {
     try {
-      return await jwt.verify(token, SECRET);
+      return await jwt.verify(token, process.env.SECRET);
     } catch (error) {
       throw new AuthenticationError('Your session has ended. Please sign in again.');
     }

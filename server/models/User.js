@@ -2,7 +2,6 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
 const md5 = require('md5');
 const jwt = require('jsonwebtoken');
-const { SECRET } = require('../config/config.json');
 const Schema = mongoose.Schema;
 
 const createToken = ({ username, email }, secret, expiresIn) => {
@@ -92,7 +91,7 @@ UserSchema.statics.signinUser = async function({ username, password }) {
     }
 
     await this.findOneAndUpdate({ username }, { $set: { online: true } }, { new: true });
-    return createToken(user, SECRET, '1hr');
+    return createToken(user, process.env.SECRET, '1hr');
   } catch (error) {
     console.error('error when add new user', error);
     throw error;
@@ -109,7 +108,7 @@ UserSchema.statics.signupUser = async function({ username, password, email }) {
 
     await new this({ username, password, email, online: true }).save();
 
-    return createToken({ username, email }, SECRET, '1hr');
+    return createToken({ username, email }, process.env.SECRET, '1hr');
   } catch (error) {
     console.error('error when add new user', error);
     throw error;

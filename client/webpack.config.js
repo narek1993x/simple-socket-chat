@@ -3,7 +3,7 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 const path = require('path');
 
 module.exports = {
-  entry: ['babel-polyfill', './client/index.js'],
+  entry: ['babel-polyfill', './index.js'],
   output: {
     path: path.resolve(__dirname, 'dist'),
     publicPath: '/',
@@ -20,12 +20,12 @@ module.exports = {
       {
         test: /\.css$/,
         loader: ['style-loader', 'css-loader'],
-        include: __dirname + '/client'
+        include: __dirname + '/'
       },
       {
         test: /\.styl$/,
         loader: 'style-loader!css-loader!stylus-loader',
-        include: __dirname + '/client'
+        include: __dirname + '/'
       }
     ]
   },
@@ -42,7 +42,7 @@ module.exports = {
   },
   plugins: [
     new HtmlWebpackPlugin({
-      template: path.resolve(__dirname, 'client/index.html'),
+      template: path.resolve(__dirname, 'public/index.html'),
       filename: 'index.html',
       inject: 'body'
     }),

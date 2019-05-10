@@ -1,0 +1,40 @@
+{
+  "name": "simple-socket-chat-frontend",
+  "version": "1.0.0",
+  "description": "my first socket.io app",
+  "main": "index.js",
+  "scripts": {
+    "build": "rimraf dist && webpack --config webpack.prod.config.js --progress --profile --color",
+    "dev": "node ./node_modules/webpack-dev-server/bin/webpack-dev-server.js --hot --open",
+    "now-build": "npm run build"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "babel-core": "^6.2.1",
+    "babel-loader": "^6.2.0",
+    "babel-plugin-transform-decorators-legacy": "^1.3.4",
+    "babel-polyfill": "^6.0.16",
+    "babel-preset-es2015": "^6.1.18",
+    "babel-preset-react": "^6.1.18",
+    "babel-preset-stage-1": "^6.1.18",
+    "css-loader": "^0.28.11",
+    "style-loader": "^0.21.0",
+    "stylus": "^0.54.5",
+    "stylus-loader": "^3.0.2",
+    "webpack": "^3.6.0",
+    "webpack-dev-server": "^2.9.1",
+    "html-webpack-plugin": "^2.30.1"
+  },
+  "dependencies": {
+    "moment": "^2.24.0",
+    "now-env": "^3.2.0",
+    "react": "^16.8.6",
+    "react-dom": "^16.8.6",
+    "react-redux": "^7.0.3",
+    "redux": "^4.0.1",
+    "redux-thunk": "^2.3.0",
+    "rimraf": "^2.6.3",
+    "socket.io-client": "2.1.1"
+  }
+}
