@@ -1,8 +1,9 @@
+const webpack = require('webpack');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const path = require('path');
 
 module.exports = {
-  entry: ['babel-polyfill', './client/app.js'],
+  entry: ['babel-polyfill', './client/index.js'],
   output: {
     path: path.resolve(__dirname, 'dist'),
     publicPath: '/',
@@ -44,6 +45,7 @@ module.exports = {
       template: path.resolve(__dirname, 'client/index.html'),
       filename: 'index.html',
       inject: 'body'
-    })
+    }),
+    new webpack.DefinePlugin({ "process.env.NODE_ENV": JSON.stringify("development") })
   ]
 };

@@ -1,7 +1,8 @@
 import React, { memo } from 'react';
+import { connect } from 'react-redux';
 
 const OnlineUserList = memo((props) => {
-  const {
+  const {    
     users,
     username,
     subscribeToUser,
@@ -10,11 +11,13 @@ const OnlineUserList = memo((props) => {
     breakTypingAnimation,
     typedUser
   } = props;
+
   const orderedUsers = [...users].sort((a, b) => a.id - b.id);
   const onlineUsersCount = orderedUsers.reduce((a, b) => {
     if (b.online) a++;
     return a;
   }, 0);
+
   return (
     <div className="online-users">
       <ul>
@@ -40,4 +43,8 @@ const OnlineUserList = memo((props) => {
   );
 });
 
-export default OnlineUserList;
+const mapStateToProps = (state) => ({
+  users: state.user.users
+});
+
+export default connect(mapStateToProps)(OnlineUserList);

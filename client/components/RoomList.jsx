@@ -1,4 +1,5 @@
 import React, { memo } from 'react';
+import { connect } from 'react-redux';
 
 const RoomList = memo(({ rooms, subscribeToRoom, currentRoomId }) => {
   return (
@@ -20,4 +21,8 @@ const RoomList = memo(({ rooms, subscribeToRoom, currentRoomId }) => {
   );
 });
 
-export default RoomList;
+const mapStateToProps = (state) => ({
+  rooms: state.room.rooms
+});
+
+export default connect(mapStateToProps)(RoomList);

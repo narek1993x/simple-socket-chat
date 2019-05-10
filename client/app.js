@@ -1,5 +1,5 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
+import { connect } from 'react-redux';
 import socket from './socket';
 import './index.styl';
 
@@ -10,16 +10,15 @@ import SendMessageForm from './components/SendMessageForm';
 import NewRoomForm from './components/NewRoomForm';
 import Auth from './components/Auth';
 
-class Root extends React.Component {
+import { setRooms, setNewRoom } from './store/room/actions';
+import { setUsers, setCurrentUser } from './store/user/actions';
+import { setMessages, setPrivateMessages, addNewMessageByKey } from './store/message/actions';
+
+class App extends React.Component {
   constructor(props) {
     super(props);
 
     this.state = {
-      messages: [],
-      privateMessages: [],
-      rooms: [],
-      users: [],
-      currentUser: {},
       subscribedUser: null,
       username: '',
       typedUser: '',
@@ -36,6 +35,8 @@ class Root extends React.Component {
   }
 
   componentDidMount = () => {
+    const { dispatch } = this.props;
+
     const userToken = localStorage.getItem('userToken');
     if (userToken) {
       this.handleUserAuthWithToken(userToken);
@@ -46,15 +47,17 @@ class Root extends React.Component {
     socket.on('response', ({ action, response, error }) => {
       switch (action) {
         case 'message':
-          return this.setNewItemByKey(response, 'messages');
+          this.handleBreakTypeAnimation();
+          return dispatch(addNewMessageByKey(response, 'messages'));
         case 'private-message':
-          return this.setNewItemByKey(response, 'privateMessages');
+          this.handleBreakTypeAnimation();
+          return dispatch(addNewMessageByKey(response, 'privateMessages'));
         case 'room':
-          return this.setNewItemByKey(response, 'rooms');
+          return dispatch(setNewRoom(response));
         case 'subscribe room':
-          return this.setState({ messages: response.messages });
+          return dispatch(setMessages(response.messages));
         case 'subscribe user':
-          return this.setState({ privateMessages: response.privateMessages });
+          return dispatch(setPrivateMessages(response.privateMessages));
         case 'login':
           return this.loginHandler(response);
         case 'user joined':
@@ -79,10 +82,11 @@ class Root extends React.Component {
       localStorage.setItem('userToken', token);
     }
 
+    this.props.dispatch(setUsers(users));
+    this.props.dispatch(setRooms(rooms));
+    this.props.dispatch(setCurrentUser(currentUser));
+
     this.setState({
-      users,
-      rooms,
-      currentUser,
       username,
       isUserNameSet: !!username,
       error: ''
@@ -90,7 +94,7 @@ class Root extends React.Component {
   };
 
   userJoinLeftHandler = ({ users }) => {
-    this.setState({ users });
+    this.props.dispatch(setUsers(users));
   };
 
   subscribeToRoom = ({ roomName, id }) => {
@@ -109,8 +113,9 @@ class Root extends React.Component {
         id
       }
     };
-    socket.emit('query', emitData);
     this.setState({ roomId: id, roomName, messages: [], subscribedUser: null });
+    this.props.dispatch(setMessages([]));
+    socket.emit('query', emitData);
   };
 
   subscribeToUser = (user) => {
@@ -120,17 +125,17 @@ class Root extends React.Component {
         id: user._id
       }
     };
-    socket.emit('query', emitData);
     this.setState({
       subscribedUser: user,
-      privateMessages: [],
       roomId: null,
       roomName: ''
     });
+    this.props.dispatch(setPrivateMessages([]));
+    socket.emit('query', emitData);
   };
 
   typeHandler = ({ username, roomName = '', direct }, stopTyping) => {
-    const typeRoom = this.state.rooms.find((r) => r.name === roomName);
+    const typeRoom = this.props.rooms.find((r) => r.name === roomName);
     const typedUser = stopTyping ? '' : username;
     const typingRoom = stopTyping ? {} : typeRoom;
 
@@ -146,7 +151,8 @@ class Root extends React.Component {
   };
 
   sendMessage = (message) => {
-    const { username, currentUser, roomName, roomId, subscribedUser } = this.state;
+    const { username, roomName, roomId, subscribedUser } = this.state;
+    const { currentUser } = this.props;
 
     if (!message) return;
 
@@ -174,12 +180,12 @@ class Root extends React.Component {
 
     const newItemKey =
       subscribedUser && subscribedUser._id ? 'privateMessages' : 'messages';
-    this.setNewItemByKey({ message, username }, newItemKey);
+    this.props.dispatch(addNewMessageByKey({ message, username }, newItemKey))
     socket.emit('query', emitData);
   };
 
   createRoom = (roomName) => {
-    const { currentUser } = this.state;
+    const { currentUser } = this.props;
 
     if (!roomName) return;
 
@@ -192,15 +198,6 @@ class Root extends React.Component {
     };
 
     socket.emit('query', emitData);
-  };
-
-  setNewItemByKey = (item, key) => {
-    if (!item) return;
-
-    this.setState((prevState) => ({
-      [key]: [...prevState[key], item],
-      breakTypingAnimation: ['messages', 'privateMessages'].includes(key)
-    }));
   };
 
   handleUserAuthWithToken = (token) => {
@@ -220,20 +217,18 @@ class Root extends React.Component {
       body: { isSignin, username, password, ...(!isSignin ? { email } : {}) }
     };
 
-    // this.setState({ isUserNameSet: true, username });
-    // !fromStorage && localStorage.setItem('username', username);
     socket.emit('query', emitData);
   };
 
+  handleBreakTypeAnimation = () => {
+    this.setState({ breakTypingAnimation: true });
+  }
+
   render() {
     const {
-      messages,
-      privateMessages,
-      rooms,
       roomId,
       subscribedUser,
       roomName,
-      users,
       username,
       typedUser,
       typingRoom,
@@ -258,12 +253,10 @@ class Root extends React.Component {
       content = (
         <div className="app">
           <RoomList
-            rooms={rooms}
             currentRoomId={roomId}
             subscribeToRoom={this.subscribeToRoom}
           />
           <OnlineUserList
-            users={users}
             username={username}
             directTyping={directTyping}
             breakTypingAnimation={breakTypingAnimation}
@@ -277,8 +270,6 @@ class Root extends React.Component {
             typedUser={typedUser}
             typingRoom={typingRoom}
             breakTypingAnimation={breakTypingAnimation}
-            privateMessages={privateMessages}
-            messages={messages}
             currentUserId={username}
           />
           <SendMessageForm
@@ -296,4 +287,7 @@ class Root extends React.Component {
   }
 }
 
-ReactDOM.render(<Root />, document.querySelector('#root'));
+export default connect(state => ({
+  rooms: state.room.rooms,
+  currentUser: state.user.currentUser
+}))(App);

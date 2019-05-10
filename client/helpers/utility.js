@@ -1,3 +1,10 @@
+export const updateObject = (oldObject, updatedProperties) => {
+  return {
+    ...oldObject,
+    ...updatedProperties
+  }
+};
+
 export const checkValidity = (fieldName, value, rules) => {
   const name = fieldName.substr(0, 1).toUpperCase() + fieldName.slice(1);
   let isValid = true;

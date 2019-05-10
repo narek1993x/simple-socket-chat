@@ -1,5 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
+import { connect } from 'react-redux';
 import moment from 'moment';
 import Message from './Message';
 
@@ -38,7 +39,7 @@ class MessageList extends React.Component {
         </div>
       );
     }
-
+    
     const list = subscribedUserName ? privateMessages : messages;
 
     return (
@@ -65,4 +66,9 @@ class MessageList extends React.Component {
   }
 }
 
-export default MessageList;
+const mapStateToProps = (state) => ({
+  messages: state.message.messages,
+  privateMessages: state.message.privateMessages,
+});
+
+export default connect(mapStateToProps)(MessageList);
