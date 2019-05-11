@@ -1,6 +1,5 @@
 require('now-env');
-const express = require('express');
-const app = express();
+const app = require('express')();
 const http = require('http').Server(app);
 const io = require('socket.io')(http);
 const mongoose = require('mongoose');
@@ -21,7 +20,7 @@ const OPTS = {
 
 if (!process.env.MONGO_URI) {
   throw new Error('You must provide a MongoLab URI');
-}
+};
 
 mongoose.Promise = global.Promise;
 mongoose.connect(process.env.MONGO_URI, OPTS);
@@ -40,7 +39,7 @@ function directAction(username, action, response) {
   } else {
     console.log('User does not exist: ' + username);
   }
-}
+};
 
 async function requestMaker(Model, action, params, username) {
   try {
@@ -52,7 +51,9 @@ async function requestMaker(Model, action, params, username) {
     });
     throw error;
   }
-}
+};
+
+io.origins(['http://localhost:3000']);
 
 io.on('connection', async function(socket) {
   let addedUser = false;

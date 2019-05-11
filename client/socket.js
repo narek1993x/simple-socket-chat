@@ -1,7 +1,7 @@
 import io from 'socket.io-client';
 
-const wsUri = 'ws://localhost:3001/';
-const socket = io(wsUri);
+const wsUri = 'ws://localhost:3001';
+const socket = io.connect(wsUri, { secure: true });
 
 const socketApi = {};
 const callbacks = {};
@@ -27,7 +27,7 @@ const createEmitter = (emitAction) => {
       console.info('socket error ', error);
     });
   };
-}
+};
 
 export const addMethod = (name) => {
   createEmitter(name);

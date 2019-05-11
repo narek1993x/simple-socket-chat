@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "build": "rimraf dist && webpack --config webpack.prod.config.js --progress --profile --color",
-    "dev": "node ./node_modules/webpack-dev-server/bin/webpack-dev-server.js --hot --open",
+    "dev": "node ./node_modules/webpack-dev-server/bin/webpack-dev-server.js --hot",
     "now-build": "npm run build"
   },
   "author": "",
