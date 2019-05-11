@@ -18,6 +18,7 @@
     "bcrypt": "^3.0.0",
     "express": "^4.16.4",
     "jsonwebtoken": "^8.3.0",
+    "lodash": "^4.17.11",
     "md5": "^2.2.1",
     "mongoose": "^5.4.12",
     "nodemon": "^1.18.10",

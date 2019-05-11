@@ -5,7 +5,6 @@ import { checkValidity } from '../helpers/utility';
 class Auth extends Component {
   state = {
     isSignin: true,
-    error: '',
     fields: [
       {
         id: 'username',
@@ -55,19 +54,12 @@ class Auth extends Component {
     isSubmit: false
   };
 
-  static getDerivedStateFromProps(nextProps, state) {
-    if (nextProps.error !== state.error) {
-      return {
-        error: nextProps.error
-      };
-    }
-    return null;
-  }
-
   handleSwitch = () => {
     this.setState(
-      (prevState) => ({ isSignin: !prevState.isSignin, error: '' }),
-      this.handleResetFields
+      (prevState) => ({ isSignin: !prevState.isSignin }), () => {
+        this.handleResetFields();
+        this.props.onHandleClearError();
+      }
     );
   };
 
@@ -147,7 +139,8 @@ class Auth extends Component {
   };
 
   render() {
-    let { isSignin, fields, error, isSubmit } = this.state;
+    let { isSignin, fields, isSubmit } = this.state;
+    const { error } = this.props;
 
     let form = fields
       .filter((f) => (isSignin ? f.id !== 'email' : true))

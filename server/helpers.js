@@ -18,7 +18,7 @@ const getUser = async (token) => {
 };
 
 module.exports = {
-  loginSocket: async function(socket, token, isFromToken) {
+  loginSocket: async function(socket, token, frontEndId, isFromToken) {
     const user = await getUser(token);
 
     if (isFromToken) {
@@ -39,10 +39,11 @@ module.exports = {
 
     socket.emit('response', {
       action: 'login',
+      frontEndId,
       response: {
         users,
         rooms,
-        currentUser,
+        currentUser,        
         token
       }
     });

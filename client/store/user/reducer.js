@@ -1,9 +1,11 @@
+import get from 'lodash/get';
 import * as types from './actionTypes';
 import { updateObject } from '../../helpers/utility';
 
 const initialState = {
   users: [],
-  currentUser: {}
+  currentUser: {},
+  isAuthenticated: false
 }
 
 const reducer = (state = initialState, action) => {
@@ -11,7 +13,8 @@ const reducer = (state = initialState, action) => {
     case types.SET_USERS:
       return updateObject(state, { users: action.users });
     case types.SET_CURRENT_USER:
-      return updateObject(state, { currentUser: action.currentUser });
+      const currentUser = get(action, 'currentUser', null);
+      return updateObject(state, { currentUser, isAuthenticated: !!currentUser });
     default: return state;
   }
 }

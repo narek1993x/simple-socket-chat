@@ -81,7 +81,7 @@ io.on('connection', async function(socket) {
     }
   });
 
-  socket.on('query', async ({ action, body }) => {
+  socket.on('query', async ({ action, body, frontEndId }) => {
     switch (action) {
       // Message sending actions
       case 'message':
@@ -139,7 +139,7 @@ io.on('connection', async function(socket) {
         return socket.leave(body.roomName);
 
       // User adding actions
-      case 'add user':
+      case 'login':
         if (addedUser) return;
         socket.username = body.username.toLowerCase();
 
@@ -167,7 +167,7 @@ io.on('connection', async function(socket) {
 
         try {
           addedUser = true;
-          await loginSocket(socket, token);
+          await loginSocket(socket, token, frontEndId);
         } catch (error) {
           console.error('Error when add user: ', error);
           addedUser = false;
@@ -176,7 +176,7 @@ io.on('connection', async function(socket) {
       // Login user with token
       case 'login with token':
         try {
-          const tokenUser = await loginSocket(socket, body.token, true);
+          const tokenUser = await loginSocket(socket, body.token, frontEndId, true);
           socket.username = tokenUser.username;
 
           clients[tokenUser.username] = {

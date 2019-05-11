@@ -1,6 +1,7 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import socket from './socket';
+import socket from './socket/socket';
+import * as socketQueryActions from './socket/socketActions'
 
 import RoomList from './components/RoomList';
 import OnlineUserList from './components/OnlineUserList';
@@ -9,8 +10,8 @@ import SendMessageForm from './components/SendMessageForm';
 import NewRoomForm from './components/NewRoomForm';
 import Auth from './components/Auth';
 
-import { setRooms, setNewRoom } from './store/room/actions';
-import { setUsers, setCurrentUser } from './store/user/actions';
+import { setNewRoom } from './store/room/actions';
+import { authUser, setUsers } from './store/user/actions';
 import { setMessages, setPrivateMessages, addNewMessageByKey } from './store/message/actions';
 
 class App extends React.Component {
@@ -19,7 +20,6 @@ class App extends React.Component {
 
     this.state = {
       subscribedUser: null,
-      username: '',
       typedUser: '',
       directTyping: false,
       breakTypingAnimation: false,
@@ -36,9 +36,9 @@ class App extends React.Component {
   componentDidMount = () => {
     const { dispatch } = this.props;
 
-    const userToken = localStorage.getItem('userToken');
-    if (userToken) {
-      this.handleUserAuthWithToken(userToken);
+    const token = localStorage.getItem('userToken');
+    if (token) {
+      dispatch(authUser({ token }, socketQueryActions.LOGIN_WITH_TOKEN));
     } else {
       this.authInputRef.current.focus();
     }
@@ -57,8 +57,6 @@ class App extends React.Component {
           return dispatch(setMessages(response.messages));
         case 'subscribe user':
           return dispatch(setPrivateMessages(response.privateMessages));
-        case 'login':
-          return this.loginHandler(response);
         case 'user joined':
           return this.userJoinLeftHandler(response);
         case 'user left':
@@ -72,23 +70,6 @@ class App extends React.Component {
         default:
           break;
       }
-    });
-  };
-
-  loginHandler = ({ users, rooms, currentUser, token }) => {
-    const username = currentUser && currentUser.username;
-    if (token) {
-      localStorage.setItem('userToken', token);
-    }
-
-    this.props.dispatch(setUsers(users));
-    this.props.dispatch(setRooms(rooms));
-    this.props.dispatch(setCurrentUser(currentUser));
-
-    this.setState({
-      username,
-      isUserNameSet: !!username,
-      error: ''
     });
   };
 
@@ -150,8 +131,8 @@ class App extends React.Component {
   };
 
   sendMessage = (message) => {
-    const { username, roomName, roomId, subscribedUser } = this.state;
-    const { currentUser } = this.props;
+    const { roomName, roomId, subscribedUser } = this.state;
+    const { currentUser, username } = this.props;
 
     if (!message) return;
 
@@ -199,28 +180,20 @@ class App extends React.Component {
     socket.emit('query', emitData);
   };
 
-  handleUserAuthWithToken = (token) => {
-    const emitData = {
-      action: 'login with token',
-      body: { token }
-    };
-
-    socket.emit('query', emitData);
-  };
-
   handleUserAuth = ({ username, password, email, isSignin }) => {
     if (!username || !password || (!isSignin && !email)) return;
 
-    const emitData = {
-      action: 'add user',
-      body: { isSignin, username, password, ...(!isSignin ? { email } : {}) }
-    };
+    const body = { isSignin, username, password, ...(!isSignin ? { email } : {}) };
 
-    socket.emit('query', emitData);
+    this.props.dispatch(authUser(body, socketQueryActions.LOGIN));
   };
 
   handleBreakTypeAnimation = () => {
     this.setState({ breakTypingAnimation: true });
+  }
+
+  handleClearError = () => {
+    this.setState({ error: '' });
   }
 
   render() {
@@ -228,14 +201,14 @@ class App extends React.Component {
       roomId,
       subscribedUser,
       roomName,
-      username,
       typedUser,
       typingRoom,
       breakTypingAnimation,
       directTyping,
-      isUserNameSet,
       error
     } = this.state;
+
+    const { isAuthenticated, username } = this.props;
 
     const subscribedUserId = subscribedUser && subscribedUser._id;
     const subscribedUserName = subscribedUser && subscribedUser.username;
@@ -244,11 +217,12 @@ class App extends React.Component {
       <Auth
         authInputRef={this.authInputRef}
         onHandleUserAuth={this.handleUserAuth}
+        onHandleClearError={this.handleClearError}
         error={error}
       />
     );
 
-    if (isUserNameSet) {
+    if (isAuthenticated) {
       content = (
         <div className="app">
           <RoomList
@@ -288,5 +262,7 @@ class App extends React.Component {
 
 export default connect(state => ({
   rooms: state.room.rooms,
-  currentUser: state.user.currentUser
+  currentUser: state.user.currentUser,
+  username:  state.user.currentUser.username,
+  isAuthenticated: state.user.isAuthenticated,
 }))(App);
