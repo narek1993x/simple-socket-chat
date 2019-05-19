@@ -38,13 +38,13 @@ export const socketQuery = (body, queryAction) => {
   });
 };
 
-socket.on('response', ({ response, frontEndId }, ) => {
+socket.on('response', ({ action, response, frontEndId }, ) => {
   try {
     if (callbacks[frontEndId]) {
       callbacks[frontEndId](response);
       delete callbacks[frontEndId];
     } else {
-      throw `CALLBACK WAS NOT FOUND${JSON.stringify(response)}`;
+      throw `CALLBACK WAS NOT FOUND "${action}" ${JSON.stringify(response)}`;
     }
   } catch (err) {
     console.log('socket response err: ', err);

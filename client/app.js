@@ -10,7 +10,7 @@ import SendMessageForm from './components/SendMessageForm';
 import NewRoomForm from './components/NewRoomForm';
 import Auth from './components/Auth';
 
-import { setNewRoom } from './store/room/actions';
+import { setNewRoom, createRoom } from './store/room/actions';
 import { authUser, setUsers } from './store/user/actions';
 import { setMessages, setPrivateMessages, addNewMessageByKey } from './store/message/actions';
 
@@ -51,7 +51,7 @@ class App extends React.Component {
         case 'private-message':
           this.handleBreakTypeAnimation();
           return dispatch(addNewMessageByKey(response, 'privateMessages'));
-        case 'room':
+        case socketQueryActions.CREATE_ROOM:
           return dispatch(setNewRoom(response));
         case 'subscribe room':
           return dispatch(setMessages(response.messages));
@@ -165,19 +165,16 @@ class App extends React.Component {
   };
 
   createRoom = (roomName) => {
-    const { currentUser } = this.props;
+    const { dispatch, currentUser } = this.props;
 
     if (!roomName) return;
 
-    const emitData = {
-      action: 'room',
-      body: {
-        name: roomName,
-        userId: currentUser._id
-      }
+    const body = {
+      name: roomName,
+      userId: currentUser._id
     };
 
-    socket.emit('query', emitData);
+    dispatch(createRoom(body, socketQueryActions.CREATE_ROOM))
   };
 
   handleUserAuth = ({ username, password, email, isSignin }) => {

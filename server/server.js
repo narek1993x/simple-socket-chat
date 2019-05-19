@@ -96,12 +96,13 @@ io.on('connection', async function(socket) {
         return directAction(body.username, action, newPrivateMessage);
 
       // Create new room action
-      case 'room':
+      case 'create_room':
         const newRoom = await Room.createRoom(body);
 
         return io.emit('response', {
           action,
-          response: newRoom
+          response: newRoom,
+          frontEndId
         });
 
       // Subscribing actions
@@ -174,7 +175,7 @@ io.on('connection', async function(socket) {
         }
         break;
       // Login user with token
-      case 'login with token':
+      case 'login_with_token':
         try {
           const tokenUser = await loginSocket(socket, body.token, frontEndId, true);
           socket.username = tokenUser.username;
@@ -184,7 +185,7 @@ io.on('connection', async function(socket) {
           };
           addedUser = true;
         } catch (error) {
-          console.error('Error when login with token: ', error);
+          console.error('Error when login_with_token: ', error);
           addedUser = false;
         }
         break;
