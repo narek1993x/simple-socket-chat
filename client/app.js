@@ -1,18 +1,18 @@
-import React from 'react';
-import { connect } from 'react-redux';
-import socket from './socket/socket';
-import * as socketQueryActions from './socket/socketActions'
+import React from "react";
+import { connect } from "react-redux";
+import socket from "./socket/socket";
+import * as socketActions from "./socket/socketActions";
 
-import RoomList from './components/RoomList';
-import OnlineUserList from './components/OnlineUserList';
-import MessageList from './components/MessageList';
-import SendMessageForm from './components/SendMessageForm';
-import NewRoomForm from './components/NewRoomForm';
-import Auth from './components/Auth';
+import RoomList from "./components/RoomList";
+import OnlineUserList from "./components/OnlineUserList";
+import MessageList from "./components/MessageList";
+import SendMessageForm from "./components/SendMessageForm";
+import NewRoomForm from "./components/NewRoomForm";
+import Auth from "./components/Auth";
 
-import { setNewRoom, createRoom } from './store/room/actions';
-import { authUser, setUsers } from './store/user/actions';
-import { setMessages, setPrivateMessages, addNewMessageByKey } from './store/message/actions';
+import { setNewRoom, createRoom } from "./store/room/actions";
+import { authUser, setUsers } from "./store/user/actions";
+import { setMessages, setPrivateMessages, addNewMessageByKey } from "./store/message/actions";
 
 class App extends React.Component {
   constructor(props) {
@@ -20,14 +20,14 @@ class App extends React.Component {
 
     this.state = {
       subscribedUser: null,
-      typedUser: '',
+      typedUser: "",
       directTyping: false,
       breakTypingAnimation: false,
       typingRoom: null,
-      roomName: '',
+      roomName: "",
       roomId: null,
       isUserNameSet: false,
-      error: ''
+      error: "",
     };
 
     this.authInputRef = React.createRef();
@@ -36,36 +36,32 @@ class App extends React.Component {
   componentDidMount = () => {
     const { dispatch } = this.props;
 
-    const token = localStorage.getItem('userToken');
+    const token = localStorage.getItem("userToken");
     if (token) {
-      dispatch(authUser({ token }, socketQueryActions.LOGIN_WITH_TOKEN));
+      dispatch(authUser({ token }, socketActions.LOGIN_WITH_TOKEN));
     } else {
       this.authInputRef.current.focus();
     }
 
-    socket.on('response', ({ action, response, error }) => {
+    socket.on("response", ({ action, response, error }) => {
       switch (action) {
-        case 'message':
-          this.handleBreakTypeAnimation();
-          return dispatch(addNewMessageByKey(response, 'messages'));
-        case 'private-message':
-          this.handleBreakTypeAnimation();
-          return dispatch(addNewMessageByKey(response, 'privateMessages'));
-        case socketQueryActions.CREATE_ROOM:
+        case socketActions.MESSAGE:
+        case socketActions.PRIVATE_MESSAGE:
+          return this.handleBreakTypeAnimation();
+        case socketActions.CREATE_ROOM:
           return dispatch(setNewRoom(response));
-        case 'subscribe room':
+        case "subscribe room":
           return dispatch(setMessages(response.messages));
-        case 'subscribe user':
+        case "subscribe user":
           return dispatch(setPrivateMessages(response.privateMessages));
-        case 'user joined':
+        case "user joined":
+        case "user left":
           return this.userJoinLeftHandler(response);
-        case 'user left':
-          return this.userJoinLeftHandler(response);
-        case 'typing':
+        case "typing":
           return this.typeHandler(response);
-        case 'stop typing':
+        case "stop typing":
           return this.typeHandler(response, true);
-        case 'error':
+        case "error":
           return this.setState({ error });
         default:
           break;
@@ -79,51 +75,51 @@ class App extends React.Component {
 
   subscribeToRoom = ({ roomName, id }) => {
     if (this.state.roomName) {
-      socket.emit('query', {
-        action: 'leave room',
+      socket.emit("query", {
+        action: "leave room",
         body: {
-          roomName: this.state.roomName
-        }
+          roomName: this.state.roomName,
+        },
       });
     }
     const emitData = {
-      action: 'subscribe room',
+      action: "subscribe room",
       body: {
         roomName,
-        id
-      }
+        id,
+      },
     };
     this.setState({ roomId: id, roomName, messages: [], subscribedUser: null });
     this.props.dispatch(setMessages([]));
-    socket.emit('query', emitData);
+    socket.emit("query", emitData);
   };
 
   subscribeToUser = (user) => {
     const emitData = {
-      action: 'subscribe user',
+      action: "subscribe user",
       body: {
-        id: user._id
-      }
+        id: user._id,
+      },
     };
     this.setState({
       subscribedUser: user,
       roomId: null,
-      roomName: ''
+      roomName: "",
     });
     this.props.dispatch(setPrivateMessages([]));
-    socket.emit('query', emitData);
+    socket.emit("query", emitData);
   };
 
-  typeHandler = ({ username, roomName = '', direct }, stopTyping) => {
+  typeHandler = ({ username, roomName = "", direct }, stopTyping) => {
     const typeRoom = this.props.rooms.find((r) => r.name === roomName);
-    const typedUser = stopTyping ? '' : username;
+    const typedUser = stopTyping ? "" : username;
     const typingRoom = stopTyping ? {} : typeRoom;
 
     if (direct) {
       this.setState({
         typedUser,
         directTyping: !stopTyping,
-        breakTypingAnimation: false
+        breakTypingAnimation: false,
       });
     } else {
       this.setState({ typedUser, typingRoom, breakTypingAnimation: false });
@@ -137,31 +133,30 @@ class App extends React.Component {
     if (!message) return;
 
     let emitData = {
-      action: 'message',
+      action: "message",
       body: {
         message,
         userId: currentUser._id,
         roomName,
-        roomId
-      }
+        roomId,
+      },
     };
 
     if (subscribedUser && subscribedUser.username) {
       emitData = {
-        action: 'private-message',
+        action: socketActions.PRIVATE_MESSAGE,
         body: {
           message,
           directUserId: subscribedUser._id,
           userId: currentUser._id,
-          username: subscribedUser.username
-        }
+          username: subscribedUser.username,
+        },
       };
     }
 
-    const newItemKey =
-      subscribedUser && subscribedUser._id ? 'privateMessages' : 'messages';
-    this.props.dispatch(addNewMessageByKey({ message, username }, newItemKey))
-    socket.emit('query', emitData);
+    const newItemKey = subscribedUser && subscribedUser._id ? "privateMessages" : "messages";
+    this.props.dispatch(addNewMessageByKey({ message, username }, newItemKey));
+    socket.emit("query", emitData);
   };
 
   createRoom = (roomName) => {
@@ -171,10 +166,10 @@ class App extends React.Component {
 
     const body = {
       name: roomName,
-      userId: currentUser._id
+      userId: currentUser._id,
     };
 
-    dispatch(createRoom(body, socketQueryActions.CREATE_ROOM))
+    dispatch(createRoom(body, socketActions.CREATE_ROOM));
   };
 
   handleUserAuth = ({ username, password, email, isSignin }) => {
@@ -182,16 +177,16 @@ class App extends React.Component {
 
     const body = { isSignin, username, password, ...(!isSignin ? { email } : {}) };
 
-    this.props.dispatch(authUser(body, socketQueryActions.LOGIN));
+    this.props.dispatch(authUser(body, socketActions.LOGIN));
   };
 
   handleBreakTypeAnimation = () => {
     this.setState({ breakTypingAnimation: true });
-  }
+  };
 
   handleClearError = () => {
-    this.setState({ error: '' });
-  }
+    this.setState({ error: "" });
+  };
 
   render() {
     const {
@@ -202,7 +197,7 @@ class App extends React.Component {
       typingRoom,
       breakTypingAnimation,
       directTyping,
-      error
+      error,
     } = this.state;
 
     const { isAuthenticated, username } = this.props;
@@ -222,10 +217,7 @@ class App extends React.Component {
     if (isAuthenticated) {
       content = (
         <div className="app">
-          <RoomList
-            currentRoomId={roomId}
-            subscribeToRoom={this.subscribeToRoom}
-          />
+          <RoomList currentRoomId={roomId} subscribeToRoom={this.subscribeToRoom} />
           <OnlineUserList
             username={username}
             directTyping={directTyping}
@@ -257,9 +249,9 @@ class App extends React.Component {
   }
 }
 
-export default connect(state => ({
+export default connect((state) => ({
   rooms: state.room.rooms,
   currentUser: state.user.currentUser,
-  username:  state.user.currentUser.username,
+  username: state.user.currentUser.username,
   isAuthenticated: state.user.isAuthenticated,
 }))(App);

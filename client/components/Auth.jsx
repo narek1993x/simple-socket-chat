@@ -1,65 +1,66 @@
-import React, { Component, Fragment } from 'react';
-import Input from './shared/Input';
-import { checkValidity } from '../helpers/utility';
+import React, { Component, Fragment } from "react";
+import Input from "./shared/Input";
+import { checkValidity } from "../helpers/utils";
 
 class Auth extends Component {
   state = {
     isSignin: true,
     fields: [
       {
-        id: 'username',
+        id: "username",
         elementConfig: {
-          type: 'text',
-          placeholder: 'Username',
-          ref: this.props.authInputRef
+          type: "text",
+          placeholder: "Username",
+          ref: this.props.authInputRef,
         },
-        value: '',
+        value: "",
         validation: {
           required: true,
-          minLength: 2
+          minLength: 2,
         },
         valid: false,
-        touched: false
+        touched: false,
       },
       {
-        id: 'email',
+        id: "email",
         elementConfig: {
-          type: 'text',
-          placeholder: 'Mail Address'
+          type: "text",
+          placeholder: "Mail Address",
         },
-        value: '',
+        value: "",
         validation: {
           required: true,
-          isEmail: true
+          isEmail: true,
         },
         valid: false,
-        touched: false
+        touched: false,
       },
       {
-        id: 'password',
+        id: "password",
         elementConfig: {
-          type: 'password',
-          placeholder: 'Password'
+          type: "password",
+          placeholder: "Password",
         },
-        value: '',
+        value: "",
         validation: {
           required: true,
           minLength: 6,
-          maxLength: 14
+          maxLength: 14,
         },
         valid: false,
-        touched: false
-      }
+        touched: false,
+      },
     ],
-    isSubmit: false
+    isSubmit: false,
   };
 
   handleSwitch = () => {
     this.setState(
-      (prevState) => ({ isSignin: !prevState.isSignin }), () => {
+      (prevState) => ({ isSignin: !prevState.isSignin }),
+      () => {
         this.handleResetFields();
         this.props.onHandleClearError();
-      }
+      },
     );
   };
 
@@ -72,7 +73,7 @@ class Auth extends Component {
     if (!this.handleInputsValidation()) return;
 
     const params = {
-      isSignin
+      isSignin,
     };
 
     for (let f of fields) {
@@ -92,15 +93,15 @@ class Auth extends Component {
     const updatedFields = fields.map((item) => ({
       ...item,
       valid: checkValidity(item.id, item.value, item.validation),
-      touched: true
+      touched: true,
     }));
 
     let formIsValid = true;
 
     for (let inputIdentifier of updatedFields) {
-      if (this.state.isSignin && inputIdentifier.id === 'email') continue;
+      if (this.state.isSignin && inputIdentifier.id === "email") continue;
       const { valid } = inputIdentifier;
-      formIsValid = typeof valid === 'boolean' && valid && formIsValid;
+      formIsValid = typeof valid === "boolean" && valid && formIsValid;
     }
 
     this.setState({ fields: updatedFields });
@@ -115,9 +116,7 @@ class Auth extends Component {
         return {
           ...field,
           value: e.target.value,
-          valid: this.state.isSubmit
-            ? checkValidity(id, e.target.value, field.validation)
-            : null
+          valid: this.state.isSubmit ? checkValidity(id, e.target.value, field.validation) : null,
         };
       }
       return field;
@@ -130,9 +129,9 @@ class Auth extends Component {
     const fields = [...this.state.fields];
     const resetedFields = fields.map((field) => ({
       ...field,
-      value: '',
+      value: "",
       valid: false,
-      touched: false
+      touched: false,
     }));
 
     this.setState({ fields: resetedFields });
@@ -143,7 +142,7 @@ class Auth extends Component {
     const { error } = this.props;
 
     let form = fields
-      .filter((f) => (isSignin ? f.id !== 'email' : true))
+      .filter((f) => (isSignin ? f.id !== "email" : true))
       .map((field) => (
         <Input
           key={field.id}
@@ -160,12 +159,12 @@ class Auth extends Component {
     return (
       <Fragment>
         <form className="auth-form" onSubmit={this.handleUserLogin}>
-          <h2>{isSignin ? 'Sign In' : 'Sign Up'}</h2>
+          <h2>{isSignin ? "Sign In" : "Sign Up"}</h2>
           {form}
           {error && <p className="error-message">{error}</p>}
-          <button type="submit">{isSignin ? 'Signin' : 'Signup'}</button>
+          <button type="submit">{isSignin ? "Signin" : "Signup"}</button>
           <button className="switch-button" type="button" onClick={this.handleSwitch}>
-            Switch to {isSignin ? 'Signup' : 'Signin'}
+            Switch to {isSignin ? "Signup" : "Signin"}
           </button>
         </form>
       </Fragment>

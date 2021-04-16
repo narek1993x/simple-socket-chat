@@ -1,8 +1,8 @@
 export const updateObject = (oldObject, updatedProperties) => {
   return {
     ...oldObject,
-    ...updatedProperties
-  }
+    ...updatedProperties,
+  };
 };
 
 export const checkValidity = (fieldName, value, rules) => {
@@ -15,7 +15,7 @@ export const checkValidity = (fieldName, value, rules) => {
   }
 
   if (rules.required) {
-    const check = value.trim() !== '';
+    const check = value.trim() !== "";
     isValid = check && isValid;
     if (!check) {
       errors.push(`${name} is required.`);
