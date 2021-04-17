@@ -1,75 +1,73 @@
-require('now-env');
-const app = require('express')();
-const http = require('http').Server(app);
-const io = require('socket.io')(http);
-const mongoose = require('mongoose');
-mongoose.set('useFindAndModify', false);
-const models = require('./models');
-const { loginSocket } = require('./helpers');
+require("now-env");
+const app = require("express")();
+const http = require("http").Server(app);
+const io = require("socket.io")(http);
+const mongoose = require("mongoose");
+mongoose.set("useFindAndModify", false);
+require("./models");
+const { loginSocket } = require("./helpers");
 
-const User = mongoose.model('User');
-const Message = mongoose.model('Message');
-const Room = mongoose.model('Room');
+const UserController = require("./controllers/User");
+
+const Message = mongoose.model("Message");
+const Room = mongoose.model("Room");
 
 // Local DB
 // const MONGO_URI = `mongodb://localhost:27017/simple-socket-chat`;
 const OPTS = {
   useNewUrlParser: true,
-  useCreateIndex: true
+  useCreateIndex: true,
 };
 
 if (!process.env.MONGO_URI) {
-  throw new Error('You must provide a MongoLab URI');
-};
+  throw new Error("You must provide a MongoLab URI");
+}
 
 mongoose.Promise = global.Promise;
 mongoose.connect(process.env.MONGO_URI, OPTS);
 mongoose.connection
-  .once('open', () => console.log('Connected to MongoLab instance.'))
-  .on('error', (error) => console.log('Error connecting to MongoLab:', error));
+  .once("open", () => console.log("Connected to MongoLab instance."))
+  .on("error", (error) => console.log("Error connecting to MongoLab:", error));
 
 const clients = {};
 
 function directAction(username, action, response) {
   if (clients[username]) {
-    io.sockets.connected[clients[username].socket].emit('response', {
+    io.sockets.connected[clients[username].socket].emit("response", {
       action,
-      response
+      response,
     });
   } else {
-    console.log('User does not exist: ' + username);
+    console.log("User does not exist: " + username);
   }
-};
+}
 
 async function requestMaker(Model, action, params, username) {
   try {
     return await Model[action](params);
   } catch (error) {
-    io.sockets.connected[clients[username].socket].emit('response', {
-      action: 'error',
-      error: error.toString()
+    io.sockets.connected[clients[username].socket].emit("response", {
+      action: "error",
+      error: error.toString(),
     });
     throw error;
   }
-};
+}
 
-io.origins(['http://localhost:3000']);
+io.origins(["http://localhost:3000"]);
 
-io.on('connection', async function(socket) {
+io.on("connection", async function (socket) {
   let addedUser = false;
 
-  socket.on('disconnect', async () => {
+  socket.on("disconnect", async () => {
     if (addedUser) {
-      await User.findOneAndUpdate(
-        { username: socket.username },
-        { $set: { online: false } },
-        { new: true }
-      );
-      socket.broadcast.emit('response', {
-        action: 'user left',
+      await UserController.disconnect(socket.username);
+
+      socket.broadcast.emit("response", {
+        action: "user left",
         response: {
-          users: await User.find({})
-        }
+          users: await UserController.getAll(),
+        },
       });
 
       for (let name in clients) {
@@ -81,88 +79,81 @@ io.on('connection', async function(socket) {
     }
   });
 
-  socket.on('query', async ({ action, body, frontEndId }) => {
+  socket.on("query", async ({ action, body, frontEndId }) => {
     switch (action) {
       // Message sending actions
-      case 'message':
+      case "message":
         const newMessage = await Message.createMessage(body);
 
-        return socket.to(body.roomName).emit('response', {
+        return socket.to(body.roomName).emit("response", {
           action,
-          response: newMessage
+          response: newMessage,
         });
-      case 'private-message':
+      case "private-message":
         const newPrivateMessage = await Message.privateMessage(body);
         return directAction(body.username, action, newPrivateMessage);
 
       // Create new room action
-      case 'create_room':
+      case "create_room":
         const newRoom = await Room.createRoom(body);
 
-        return io.emit('response', {
+        return io.emit("response", {
           action,
           response: newRoom,
-          frontEndId
+          frontEndId,
         });
 
       // Subscribing actions
-      case 'subscribe room':
+      case "subscribe room":
         const currentRoom = await Room.findById(body.id).populate({
-          path: 'messages',
-          model: 'Message',
+          path: "messages",
+          model: "Message",
           populate: {
-            path: 'createdBy',
-            model: 'User'
-          }
+            path: "createdBy",
+            model: "User",
+          },
         });
         // Join to room
         socket.join(body.roomName);
-        return socket.emit('response', {
+        return socket.emit("response", {
           action,
-          response: currentRoom
+          response: currentRoom,
         });
-      case 'subscribe user':
-        const subscriedUser = await User.findById(body.id).populate({
-          path: 'privateMessages',
-          model: 'Message',
-          populate: {
-            path: 'createdBy',
-            model: 'User'
-          }
-        });
+      case "subscribe user":
+        const subscribedUser = await UserController.getPrivateMessages(body.id);
 
-        return socket.emit('response', {
+        return socket.emit("response", {
           action,
-          response: subscriedUser
+          response: subscribedUser,
         });
-      case 'leave room':
+      case "leave room":
         // Leave room
         return socket.leave(body.roomName);
 
       // User adding actions
-      case 'login':
+      case "login":
         if (addedUser) return;
         socket.username = body.username.toLowerCase();
 
         // add new client for using direct messages
         clients[socket.username] = {
-          socket: socket.id
+          socket: socket.id,
         };
 
         let token;
         if (body.isSignin) {
           token = await requestMaker(
-            User,
-            'signinUser',
+            UserController,
+            "signin",
             { username: socket.username, password: body.password },
-            socket.username
+            socket.username,
           );
         } else {
           token = await requestMaker(
-            User,
-            'signupUser',
+            UserController,
+            "signup",
             { username: socket.username, password: body.password, email: body.email },
-            socket.username
+            socket.username,
           );
         }
 
@@ -170,55 +161,55 @@ io.on('connection', async function(socket) {
           addedUser = true;
           await loginSocket(socket, token, frontEndId);
         } catch (error) {
-          console.error('Error when add user: ', error);
+          console.error("Error when add user: ", error);
           addedUser = false;
         }
         break;
       // Login user with token
-      case 'login_with_token':
+      case "login_with_token":
         try {
           const tokenUser = await loginSocket(socket, body.token, frontEndId, true);
           socket.username = tokenUser.username;
 
           clients[tokenUser.username] = {
-            socket: socket.id
+            socket: socket.id,
           };
           addedUser = true;
         } catch (error) {
-          console.error('Error when login_with_token: ', error);
+          console.error("Error when login_with_token: ", error);
           addedUser = false;
         }
         break;
 
       // Type handling actions
-      case 'typing':
+      case "typing":
         if (body.isDirect) {
           return directAction(body.username, action, {
             username: socket.username,
-            direct: true
+            direct: true,
           });
         }
 
-        return socket.to(body.roomName).emit('response', {
+        return socket.to(body.roomName).emit("response", {
           action,
           response: {
             username: socket.username,
-            roomName: body.roomName
-          }
+            roomName: body.roomName,
+          },
         });
-      case 'stop typing':
+      case "stop typing":
         if (body.isDirect) {
           return directAction(body.username, action, {
             username: socket.username,
-            direct: true
+            direct: true,
           });
         }
-        return socket.to(body.roomName).emit('response', {
+        return socket.to(body.roomName).emit("response", {
           action,
           response: {
             username: socket.username,
-            roomName: body.roomName
-          }
+            roomName: body.roomName,
+          },
         });
 
       default:

@@ -78,7 +78,7 @@ UserSchema.pre("save", function (next) {
 
 let UserModel;
 
-UserSchema.statics.signinUser = async function ({ username, password }) {
+UserSchema.statics.signin = async function ({ username, password }) {
   try {
     const user = await UserModel.findOne({ username });
 
@@ -100,7 +100,7 @@ UserSchema.statics.signinUser = async function ({ username, password }) {
   }
 };
 
-UserSchema.statics.signupUser = async function ({ username, password, email }) {
+UserSchema.statics.signup = async function ({ username, password, email }) {
   try {
     const user = await UserModel.findOne({ username });
 
