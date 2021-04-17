@@ -1,7 +1,7 @@
-const mongoose = require('mongoose');
-const bcrypt = require('bcrypt');
-const md5 = require('md5');
-const jwt = require('jsonwebtoken');
+const mongoose = require("mongoose");
+const bcrypt = require("bcrypt");
+const md5 = require("md5");
+const jwt = require("jsonwebtoken");
 const Schema = mongoose.Schema;
 
 const createToken = ({ username, email }, secret, expiresIn) => {
@@ -13,41 +13,41 @@ const UserSchema = new Schema({
     type: String,
     required: true,
     trim: true,
-    unique: true
+    unique: true,
   },
   email: {
     type: String,
     required: true,
-    trim: true
+    trim: true,
   },
   password: {
     type: String,
     required: true,
-    trim: true
+    trim: true,
   },
   avatar: {
-    type: String
+    type: String,
   },
   online: {
     type: Boolean,
-    default: false
+    default: false,
   },
   joinDate: {
     type: Date,
-    default: Date.now
+    default: Date.now,
   },
   privateMessages: [
     {
       type: Schema.Types.ObjectId,
       required: true,
-      ref: 'Message'
-    }
-  ]
+      ref: "Message",
+    },
+  ],
 });
 
 // Create and add avatar to user
 
-UserSchema.pre('save', function(next) {
+UserSchema.pre("save", function (next) {
   this.avatar = `http://gravatar.com/avatar/${md5(this.username)}?d=identicon`;
   next();
 });
@@ -57,9 +57,9 @@ UserSchema.pre('save', function(next) {
 // procedure that modifies the password - the plain text password cannot be
 // derived from the salted + hashed version. See 'comparePassword' to understand
 // how this is used.
-UserSchema.pre('save', function(next) {
+UserSchema.pre("save", function (next) {
   const user = this;
-  if (!user.isModified('password')) {
+  if (!user.isModified("password")) {
     return next();
   }
   bcrypt.genSalt(10, (err, salt) => {
@@ -76,43 +76,50 @@ UserSchema.pre('save', function(next) {
   });
 });
 
-UserSchema.statics.signinUser = async function({ username, password }) {
+let UserModel;
+
+UserSchema.statics.signinUser = async function ({ username, password }) {
   try {
-    const user = await this.findOne({ username });
+    const user = await UserModel.findOne({ username });
 
     if (!user) {
-      throw new Error('User not found');
+      throw new Error("User not found");
     }
 
     const isValidPassword = await bcrypt.compare(password, user.password);
 
     if (!isValidPassword) {
-      throw new Error('Invalid password');
+      throw new Error("Invalid password");
     }
 
-    await this.findOneAndUpdate({ username }, { $set: { online: true } }, { new: true });
-    return createToken(user, process.env.SECRET, '1hr');
+    await UserModel.findOneAndUpdate({ username }, { $set: { online: true } }, { new: true });
+    return createToken(user, process.env.SECRET, "1hr");
   } catch (error) {
-    console.error('error when add new user', error);
+    console.error("error when add new user", error);
     throw error;
   }
 };
 
-UserSchema.statics.signupUser = async function({ username, password, email }) {
+UserSchema.statics.signupUser = async function ({ username, password, email }) {
   try {
-    const user = await this.findOne({ username });
+    const user = await UserModel.findOne({ username });
 
     if (user) {
-      throw new Error('User already exists');
+      throw new Error("User already exists");
     }
 
-    await new this({ username, password, email, online: true }).save();
+    await new UserModel({ username, password, email, online: true }).save();
 
-    return createToken({ username, email }, process.env.SECRET, '1hr');
+    return createToken({ username, email }, process.env.SECRET, "1hr");
   } catch (error) {
-    console.error('error when add new user', error);
+    console.error("error when add new user", error);
     throw error;
   }
 };
 
-mongoose.model('User', UserSchema);
+UserModel = mongoose.model("User", UserSchema);
+
+module.exports = {
+  UserModel,
+  UserSchema,
+};
