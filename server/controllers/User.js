@@ -5,8 +5,8 @@ class UserController {
     return await UserModel.find({});
   }
 
-  static async disconnect(username) {
-    await UserModel.findOneAndUpdate({ username }, { $set: { online: false } }, { new: true });
+  static async updateStatus(username, online) {
+    await UserModel.findOneAndUpdate({ username }, { $set: { online } }, { new: true });
   }
 
   static async getUser(userId) {

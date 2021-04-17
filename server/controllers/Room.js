@@ -1,6 +1,10 @@
 const { RoomModel } = require("../models/Room");
 
 class RoomController {
+  static async getAll() {
+    return await RoomModel.find({});
+  }
+
   static async addRoom(params) {
     return await RoomModel.addRoom(params);
   }

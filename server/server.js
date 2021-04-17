@@ -60,7 +60,7 @@ io.on("connection", async function (socket) {
 
   socket.on("disconnect", async () => {
     if (addedUser) {
-      await UserController.disconnect(socket.username);
+      await UserController.updateStatus(socket.username, false);
 
       socket.broadcast.emit("response", {
         action: "user left",
@@ -99,7 +99,7 @@ io.on("connection", async function (socket) {
           response: newRoom,
           frontEndId,
         });
-      case "subscribe room":
+      case "subscribe_room":
         const currentRoom = await RoomController.getRoom(body.id);
         socket.join(body.roomName);
 
@@ -107,7 +107,7 @@ io.on("connection", async function (socket) {
           action,
           response: currentRoom,
         });
-      case "subscribe user":
+      case "subscribe_user":
         const subscribedUser = await UserController.getUser(body.id);
 
         return socket.emit("response", {

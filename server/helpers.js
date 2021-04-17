@@ -1,10 +1,6 @@
-const mongoose = require('mongoose');
-
-const User = mongoose.model('User');
-const Message = mongoose.model('Message');
-const Room = mongoose.model('Room');
-
-const jwt = require('jsonwebtoken');
+const jwt = require("jsonwebtoken");
+const UserController = require("./controllers/User");
+const RoomController = require("./controllers/Room");
 
 // Verify JWT Token passed from client
 const getUser = async (token) => {
@@ -12,49 +8,45 @@ const getUser = async (token) => {
     try {
       return await jwt.verify(token, process.env.SECRET);
     } catch (error) {
-      throw new AuthenticationError('Your session has ended. Please sign in again.');
+      throw new AuthenticationError("Your session has ended. Please sign in again.");
     }
   }
 };
 
 module.exports = {
-  loginSocket: async function(socket, token, frontEndId, isFromToken) {
+  loginSocket: async function (socket, token, frontEndId, isFromToken) {
     const user = await getUser(token);
 
     if (isFromToken) {
-      await User.findOneAndUpdate(
-        { username: user.username },
-        { $set: { online: true } },
-        { new: true }
-      );
+      await UserController.updateStatus(user.username, true);
     }
 
-    const users = await User.find({});
-    const rooms = await Room.find({});
+    const users = await UserController.getAll();
+    const rooms = await RoomController.getAll();
 
     let currentUser;
     if (user && user.username) {
       currentUser = users.find((u) => u.username === user.username);
     }
 
-    socket.emit('response', {
-      action: 'login',
+    socket.emit("response", {
+      action: "login",
       frontEndId,
       response: {
         users,
         rooms,
-        currentUser,        
-        token
-      }
+        currentUser,
+        token,
+      },
     });
 
-    socket.broadcast.emit('response', {
-      action: 'user joined',
+    socket.broadcast.emit("response", {
+      action: "user joined",
       response: {
-        users
-      }
+        users,
+      },
     });
 
     return currentUser;
-  }
+  },
 };
