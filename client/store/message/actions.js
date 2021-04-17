@@ -1,5 +1,5 @@
 import * as types from "./actionTypes";
-import { createSubscription } from "../../socket/socket";
+import { createSubscriptions } from "../../socket/socket";
 import { MESSAGE, PRIVATE_MESSAGE } from "../../socket/socketActions";
 
 export const setMessages = (messages) => {
@@ -24,7 +24,7 @@ export const addNewMessageByKey = (message, key) => {
   };
 };
 
-const subscribeActions = [
+createSubscriptions([
   {
     query: MESSAGE,
     reduxAction: addNewMessageByKey,
@@ -35,6 +35,4 @@ const subscribeActions = [
     reduxAction: addNewMessageByKey,
     params: ["privateMessages"],
   },
-];
-
-subscribeActions.forEach(createSubscription);
+]);

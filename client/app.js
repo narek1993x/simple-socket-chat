@@ -10,7 +10,7 @@ import SendMessageForm from "./components/SendMessageForm";
 import NewRoomForm from "./components/NewRoomForm";
 import Auth from "./components/Auth";
 
-import { setNewRoom, createRoom } from "./store/room/actions";
+import { createRoom } from "./store/room/actions";
 import { authUser, setUsers } from "./store/user/actions";
 import { setMessages, setPrivateMessages, addNewMessageByKey } from "./store/message/actions";
 
@@ -48,8 +48,6 @@ class App extends React.Component {
         case socketActions.MESSAGE:
         case socketActions.PRIVATE_MESSAGE:
           return this.handleBreakTypeAnimation();
-        case socketActions.CREATE_ROOM:
-          return dispatch(setNewRoom(response));
         case "subscribe room":
           return dispatch(setMessages(response.messages));
         case "subscribe user":

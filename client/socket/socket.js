@@ -6,15 +6,15 @@ const wsUri = "ws://localhost:3001";
 const socket = io.connect(wsUri, { secure: true });
 
 const callbacks = {};
-const subscriptions = {};
+const subscribeCallbacks = {};
 
-export const createSubscription = ({ query, reduxAction, params }) => {
-  subscriptions[query] = (response) => {
-    if (typeof reduxAction === "function") {
-      store.dispatch(reduxAction(response, ...params));
-    } else {
-      store.dispatch({ type: reduxAction, payload: response });
-    }
+export const createSubscriptions = (subscriptions) => {
+  subscriptions.forEach(createSubscription);
+};
+
+export const createSubscription = ({ query, reduxAction, params = [] }) => {
+  subscribeCallbacks[query] = (response) => {
+    store.dispatch(reduxAction(response, ...params));
   };
 };
 
@@ -43,8 +43,8 @@ socket.on("response", ({ action, response, frontEndId }) => {
     if (callbacks[frontEndId]) {
       callbacks[frontEndId](response);
       delete callbacks[frontEndId];
-    } else if (subscriptions[action]) {
-      subscriptions[action](response);
+    } else if (subscribeCallbacks[action]) {
+      subscribeCallbacks[action](response);
     } else {
       throw `CALLBACK WAS NOT FOUND "${action}" ${JSON.stringify(response)}`;
     }
