@@ -1,7 +1,7 @@
 import * as types from "./actionTypes";
+import * as socketActions from "../../socket/socketActions";
 import { socketQuery } from "../../socket/socket";
 import { createSubscriptions } from "../../socket/socket";
-import { CREATE_ROOM } from "../../socket/socketActions";
 
 export const createRoom = (body, queryAction) => {
   return async (dispatch) => {
@@ -30,7 +30,7 @@ export const setNewRoom = (newRoom) => {
 
 createSubscriptions([
   {
-    query: CREATE_ROOM,
+    query: socketActions.CREATE_ROOM,
     reduxAction: setNewRoom,
   },
 ]);

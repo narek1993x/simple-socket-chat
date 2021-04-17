@@ -48,8 +48,6 @@ class App extends React.Component {
         case socketActions.MESSAGE:
         case socketActions.PRIVATE_MESSAGE:
           return this.handleBreakTypeAnimation();
-        case "subscribe user":
-          return dispatch(setPrivateMessages(response.privateMessages));
         case "user joined":
         case "user left":
           return this.userJoinLeftHandler(response);
@@ -92,7 +90,7 @@ class App extends React.Component {
 
   subscribeToUser = (user) => {
     const emitData = {
-      action: "subscribe user",
+      action: socketActions.SUBSCRIBE_USER,
       body: {
         id: user._id,
       },
@@ -102,7 +100,7 @@ class App extends React.Component {
       roomId: null,
       roomName: "",
     });
-    this.props.dispatch(setPrivateMessages([]));
+    this.props.dispatch(setPrivateMessages({ privateMessages: [] }));
     socket.emit("query", emitData);
   };
 

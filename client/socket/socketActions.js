@@ -6,3 +6,4 @@ export const MESSAGE = "message";
 export const PRIVATE_MESSAGE = "private-message";
 
 export const SUBSCRIBE_ROOM = "subscribe room";
+export const SUBSCRIBE_USER = "subscribe user";

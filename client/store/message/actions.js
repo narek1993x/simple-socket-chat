@@ -1,6 +1,6 @@
 import * as types from "./actionTypes";
+import * as socketActions from "../../socket/socketActions";
 import { createSubscriptions } from "../../socket/socket";
-import { MESSAGE, PRIVATE_MESSAGE, SUBSCRIBE_ROOM } from "../../socket/socketActions";
 
 export const setMessages = ({ messages }) => {
   return {
@@ -9,7 +9,7 @@ export const setMessages = ({ messages }) => {
   };
 };
 
-export const setPrivateMessages = (privateMessages) => {
+export const setPrivateMessages = ({ privateMessages }) => {
   return {
     type: types.SET_PRIVATE_MESSAGES,
     privateMessages,
@@ -26,16 +26,20 @@ export const addNewMessageByKey = (message, key) => {
 
 createSubscriptions([
   {
-    query: SUBSCRIBE_ROOM,
+    query: socketActions.SUBSCRIBE_ROOM,
     reduxAction: setMessages,
   },
   {
-    query: MESSAGE,
+    query: socketActions.SUBSCRIBE_USER,
+    reduxAction: setPrivateMessages,
+  },
+  {
+    query: socketActions.MESSAGE,
     reduxAction: addNewMessageByKey,
     params: ["messages"],
   },
   {
-    query: PRIVATE_MESSAGE,
+    query: socketActions.PRIVATE_MESSAGE,
     reduxAction: addNewMessageByKey,
     params: ["privateMessages"],
   },
