@@ -48,9 +48,6 @@ class App extends React.Component {
         case socketActions.MESSAGE:
         case socketActions.PRIVATE_MESSAGE:
           return this.handleBreakTypeAnimation();
-        case "user joined":
-        case "user left":
-          return this.userJoinLeftHandler(response);
         case "typing":
           return this.typeHandler(response);
         case "stop typing":
@@ -61,10 +58,6 @@ class App extends React.Component {
           break;
       }
     });
-  };
-
-  userJoinLeftHandler = ({ users }) => {
-    this.props.dispatch(setUsers(users));
   };
 
   subscribeToRoom = ({ roomName, id }) => {
