@@ -1,16 +1,8 @@
-import React, { memo } from 'react';
-import { connect } from 'react-redux';
+import React, { memo } from "react";
+import { connect } from "react-redux";
 
 const OnlineUserList = memo((props) => {
-  const {    
-    users,
-    username,
-    subscribeToUser,
-    subscribedUser = {},
-    directTyping,
-    breakTypingAnimation,
-    typedUser
-  } = props;
+  const { users, username, subscribeToUser, subscribedUser = {}, isDirectTyping, typingUsername, isTyping } = props;
 
   const orderedUsers = [...users].sort((a, b) => a.id - b.id);
   const onlineUsersCount = orderedUsers.reduce((a, b) => {
@@ -25,15 +17,14 @@ const OnlineUserList = memo((props) => {
         {orderedUsers.map((user) => {
           const current = user.username === username;
           const selected = subscribedUser && subscribedUser.username === user.username;
-          const isType = user.username === typedUser && directTyping;
+          const isType = isTyping && isDirectTyping && user.username === typingUsername;
+
           return (
-            <li key={user._id} className={`user ${selected ? 'selected' : ''}`}>
+            <li key={user._id} className={`user ${selected ? "selected" : ""}`}>
               <a href="#" onClick={() => !current && subscribeToUser(user)}>
-                <span className={`status${user.online ? ' online' : ''}`}>
-                  {user.online ? '●' : '○'}
-                </span>
-                {user.username} {current && ' (you)'}
-                {!breakTypingAnimation && isType && <p className="type">......</p>}
+                <span className={`status${user.online ? " online" : ""}`}>{user.online ? "●" : "○"}</span>
+                {user.username} {current && " (you)"}
+                {isType && <p className="type">...</p>}
               </a>
             </li>
           );
@@ -44,7 +35,10 @@ const OnlineUserList = memo((props) => {
 });
 
 const mapStateToProps = (state) => ({
-  users: state.user.users
+  users: state.user.users,
+  typingUsername: state.message.typingUsername,
+  isDirectTyping: state.message.isDirectTyping,
+  isTyping: state.message.isTyping,
 });
 
 export default connect(mapStateToProps)(OnlineUserList);

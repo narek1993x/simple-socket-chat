@@ -1,14 +1,13 @@
-import React from 'react';
-import ReactDOM from 'react-dom';
-import { connect } from 'react-redux';
-import moment from 'moment';
-import Message from './Message';
+import React from "react";
+import ReactDOM from "react-dom";
+import { connect } from "react-redux";
+import moment from "moment";
+import Message from "./Message";
 
 class MessageList extends React.Component {
   componentWillUpdate() {
     const node = ReactDOM.findDOMNode(this);
-    this.shouldScrollToBottom =
-      node.scrollTop + node.clientHeight + 100 >= node.scrollHeight;
+    this.shouldScrollToBottom = node.scrollTop + node.clientHeight + 100 >= node.scrollHeight;
   }
 
   componentDidUpdate() {
@@ -23,24 +22,23 @@ class MessageList extends React.Component {
       messages,
       privateMessages,
       currentUserId,
-      typedUser,
-      typingRoom,
+      typingUsername,
+      typingRoomId,
       roomId,
-      subscribedUserName,
-      breakTypingAnimation
+      subscribedUsername,
+      isTyping,
     } = this.props;
-    const isType =
-      (typingRoom && typingRoom._id === roomId) || subscribedUserName === typedUser;
+    const isType = isTyping && typingUsername && (typingRoomId === roomId || subscribedUsername === typingUsername);
 
-    if (!roomId && !subscribedUserName) {
+    if (!roomId && !subscribedUsername) {
       return (
         <div className="message-list">
           <div className="join-room">&larr; Join a room!</div>
         </div>
       );
     }
-    
-    const list = subscribedUserName ? privateMessages : messages;
+
+    const list = subscribedUsername ? privateMessages : messages;
 
     return (
       <div className="message-list">
@@ -50,15 +48,15 @@ class MessageList extends React.Component {
             <Message
               key={i}
               message={message}
-              time={moment(createdDate).format('hh:mm')}
+              time={moment(createdDate).format("hh:mm")}
               username={currentUsername}
               isCurrentUserMessage={currentUsername === currentUserId}
             />
           );
         })}
-        {!breakTypingAnimation && isType && (
-          <span className="message-type" style={{ maxWidth: typedUser.length * 18 }}>
-            <p className="type">...{typedUser} is typing</p>
+        {isType && (
+          <span className="message-type" style={{ maxWidth: typingUsername.length * 18 }}>
+            <p className="type">...{typingUsername} is typing</p>
           </span>
         )}
       </div>
@@ -69,6 +67,9 @@ class MessageList extends React.Component {
 const mapStateToProps = (state) => ({
   messages: state.message.messages,
   privateMessages: state.message.privateMessages,
+  typingUsername: state.message.typingUsername,
+  typingRoomId: state.message.typingRoomId,
+  isTyping: state.message.isTyping,
 });
 
 export default connect(mapStateToProps)(MessageList);

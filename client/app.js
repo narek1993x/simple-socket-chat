@@ -20,10 +20,6 @@ class App extends React.Component {
 
     this.state = {
       subscribedUser: null,
-      typedUser: "",
-      directTyping: false,
-      breakTypingAnimation: false,
-      typingRoom: null,
       roomName: "",
       roomId: null,
       isUserNameSet: false,
@@ -45,13 +41,6 @@ class App extends React.Component {
 
     socket.on("response", ({ action, response, error }) => {
       switch (action) {
-        case socketActions.MESSAGE:
-        case socketActions.PRIVATE_MESSAGE:
-          return this.handleBreakTypeAnimation();
-        case "typing":
-          return this.typeHandler(response);
-        case "stop typing":
-          return this.typeHandler(response, true);
         case "error":
           return this.setState({ error });
         default:
@@ -63,7 +52,7 @@ class App extends React.Component {
   subscribeToRoom = ({ roomName, id }) => {
     if (this.state.roomName) {
       socket.emit("query", {
-        action: "leave room",
+        action: socketActions.LEAVE_ROOM,
         body: {
           roomName: this.state.roomName,
         },
@@ -95,22 +84,6 @@ class App extends React.Component {
     });
     this.props.dispatch(setPrivateMessages({ privateMessages: [] }));
     socket.emit("query", emitData);
-  };
-
-  typeHandler = ({ username, roomName = "", direct }, stopTyping) => {
-    const typeRoom = this.props.rooms.find((r) => r.name === roomName);
-    const typedUser = stopTyping ? "" : username;
-    const typingRoom = stopTyping ? {} : typeRoom;
-
-    if (direct) {
-      this.setState({
-        typedUser,
-        directTyping: !stopTyping,
-        breakTypingAnimation: false,
-      });
-    } else {
-      this.setState({ typedUser, typingRoom, breakTypingAnimation: false });
-    }
   };
 
   sendMessage = (message) => {
@@ -167,30 +140,17 @@ class App extends React.Component {
     this.props.dispatch(authUser(body, socketActions.LOGIN));
   };
 
-  handleBreakTypeAnimation = () => {
-    this.setState({ breakTypingAnimation: true });
-  };
-
   handleClearError = () => {
     this.setState({ error: "" });
   };
 
   render() {
-    const {
-      roomId,
-      subscribedUser,
-      roomName,
-      typedUser,
-      typingRoom,
-      breakTypingAnimation,
-      directTyping,
-      error,
-    } = this.state;
+    const { roomId, subscribedUser, roomName, error } = this.state;
 
     const { isAuthenticated, username } = this.props;
 
     const subscribedUserId = subscribedUser && subscribedUser._id;
-    const subscribedUserName = subscribedUser && subscribedUser.username;
+    const subscribedUsername = subscribedUser && subscribedUser.username;
 
     let content = (
       <Auth
@@ -205,27 +165,13 @@ class App extends React.Component {
       content = (
         <div className="app">
           <RoomList currentRoomId={roomId} subscribeToRoom={this.subscribeToRoom} />
-          <OnlineUserList
-            username={username}
-            directTyping={directTyping}
-            breakTypingAnimation={breakTypingAnimation}
-            typedUser={typedUser}
-            subscribedUser={subscribedUser}
-            subscribeToUser={this.subscribeToUser}
-          />
-          <MessageList
-            roomId={roomId}
-            subscribedUserName={subscribedUserName}
-            typedUser={typedUser}
-            typingRoom={typingRoom}
-            breakTypingAnimation={breakTypingAnimation}
-            currentUserId={username}
-          />
+          <OnlineUserList username={username} subscribedUser={subscribedUser} subscribeToUser={this.subscribeToUser} />
+          <MessageList roomId={roomId} subscribedUsername={subscribedUsername} currentUserId={username} />
           <SendMessageForm
             disabled={!roomId && !subscribedUserId}
             sendMessage={this.sendMessage}
             roomName={roomName}
-            subscribedUserName={subscribedUserName}
+            subscribedUsername={subscribedUsername}
           />
           <NewRoomForm createRoom={this.createRoom} />
         </div>

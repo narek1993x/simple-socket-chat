@@ -1,41 +1,42 @@
-import React, { PureComponent } from 'react';
-import socket from '../socket/socket';
+import React, { PureComponent } from "react";
+import * as socketActions from "../socket/socketActions";
+import socket from "../socket/socket";
 
 class SendMessageForm extends PureComponent {
   state = {
-    message: '',
-    isTyping: false
+    message: "",
+    isTyping: false,
   };
 
   handleChange = (e) => {
-    const { subscribedUserName, roomName } = this.props;
+    const { subscribedUsername, roomName } = this.props;
     let body = { roomName };
 
-    if (subscribedUserName) {
+    if (subscribedUsername) {
       body = {
-        username: subscribedUserName,
-        isDirect: true
+        username: subscribedUsername,
+        isDirect: true,
       };
     }
 
     if (this.timeOut) clearTimeout(this.timeOut);
 
     this.timeOut = setTimeout(() => {
-      socket.emit('query', {
-        action: 'stop typing',
-        body
+      socket.emit("query", {
+        action: socketActions.STOP_TYPING,
+        body,
       });
       this.setState({ isTyping: false });
     }, 1000);
 
-    !this.state.isTyping && socket.emit('query', { action: 'typing', body });
+    !this.state.isTyping && socket.emit("query", { action: socketActions.TYPING, body });
     this.setState({ message: e.target.value, isTyping: true });
   };
 
   handleSubmit = (e) => {
     e.preventDefault();
     this.props.sendMessage(this.state.message);
-    this.setState({ message: '' });
+    this.setState({ message: "" });
   };
 
   render() {

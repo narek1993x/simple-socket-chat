@@ -14,7 +14,13 @@ export const createSubscriptions = (subscriptions) => {
 
 export const createSubscription = ({ query, reduxAction, params = [] }) => {
   subscribeCallbacks[query] = (response) => {
-    store.dispatch(reduxAction(response, ...params));
+    if (Array.isArray(reduxAction)) {
+      reduxAction.forEach((action) => {
+        store.dispatch(action(response, ...params));
+      });
+    } else {
+      store.dispatch(reduxAction(response, ...params));
+    }
   };
 };
 
