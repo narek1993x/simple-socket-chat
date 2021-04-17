@@ -1,5 +1,7 @@
 import React, { Component, Fragment } from "react";
+import { connect } from "react-redux";
 import Input from "./shared/Input";
+import { clearError } from "../store/global/actions";
 import { checkValidity } from "../helpers/utils";
 
 class Auth extends Component {
@@ -59,7 +61,7 @@ class Auth extends Component {
       (prevState) => ({ isSignin: !prevState.isSignin }),
       () => {
         this.handleResetFields();
-        this.props.onHandleClearError();
+        this.props.dispatch(clearError());
       },
     );
   };
@@ -172,4 +174,8 @@ class Auth extends Component {
   }
 }
 
-export default Auth;
+const mapStateToProps = (state) => ({
+  error: state.global.error,
+});
+
+export default connect(mapStateToProps)(Auth);

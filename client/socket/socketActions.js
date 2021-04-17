@@ -15,3 +15,5 @@ export const USER_LEFT = "user left";
 
 export const TYPING = "typing";
 export const STOP_TYPING = "stop typing";
+
+export const ERROR = "error";

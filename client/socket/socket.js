@@ -1,6 +1,7 @@
 import io from "socket.io-client";
 import store from "../store";
 import { guid, createQueryData } from "./utils";
+import { SET_ERROR } from "../store/global/actionTypes";
 
 const wsUri = "ws://localhost:3001";
 const socket = io.connect(wsUri, { secure: true });
@@ -13,7 +14,12 @@ export const createSubscriptions = (subscriptions) => {
 };
 
 export const createSubscription = ({ query, reduxAction, params = [] }) => {
-  subscribeCallbacks[query] = (response) => {
+  subscribeCallbacks[query] = (response, error) => {
+    if (error) {
+      store.dispatch({ type: SET_ERROR, error });
+      return;
+    }
+
     if (Array.isArray(reduxAction)) {
       reduxAction.forEach((action) => {
         store.dispatch(action(response, ...params));
@@ -32,10 +38,15 @@ export const socketQuery = (body, queryAction) => {
   socket.emit("query", queryData);
 
   return new Promise((resolve, reject) => {
-    callbacks[frontEndId] = (response) => {
+    callbacks[frontEndId] = (response, error) => {
+      if (error) {
+        return reject(error);
+      }
+
       if (response) {
         return resolve(response);
       }
+
       reject(`UNHANDLED ERROR IN "${queryAction}" ACTION`);
     };
   }).catch((error) => {
@@ -44,13 +55,13 @@ export const socketQuery = (body, queryAction) => {
   });
 };
 
-socket.on("response", ({ action, response, frontEndId }) => {
+socket.on("response", ({ action, response, error, frontEndId }) => {
   try {
     if (callbacks[frontEndId]) {
-      callbacks[frontEndId](response);
+      callbacks[frontEndId](response, error);
       delete callbacks[frontEndId];
     } else if (subscribeCallbacks[action]) {
-      subscribeCallbacks[action](response);
+      subscribeCallbacks[action](response, error);
     } else {
       throw `CALLBACK WAS NOT FOUND "${action}" ${JSON.stringify(response)}`;
     }

@@ -23,7 +23,6 @@ class App extends React.Component {
       roomName: "",
       roomId: null,
       isUserNameSet: false,
-      error: "",
     };
 
     this.authInputRef = React.createRef();
@@ -38,15 +37,6 @@ class App extends React.Component {
     } else {
       this.authInputRef.current.focus();
     }
-
-    socket.on("response", ({ action, response, error }) => {
-      switch (action) {
-        case "error":
-          return this.setState({ error });
-        default:
-          break;
-      }
-    });
   };
 
   subscribeToRoom = ({ roomName, id }) => {
@@ -140,26 +130,15 @@ class App extends React.Component {
     this.props.dispatch(authUser(body, socketActions.LOGIN));
   };
 
-  handleClearError = () => {
-    this.setState({ error: "" });
-  };
-
   render() {
-    const { roomId, subscribedUser, roomName, error } = this.state;
+    const { roomId, subscribedUser, roomName } = this.state;
 
     const { isAuthenticated, username } = this.props;
 
     const subscribedUserId = subscribedUser && subscribedUser._id;
     const subscribedUsername = subscribedUser && subscribedUser.username;
 
-    let content = (
-      <Auth
-        authInputRef={this.authInputRef}
-        onHandleUserAuth={this.handleUserAuth}
-        onHandleClearError={this.handleClearError}
-        error={error}
-      />
-    );
+    let content = <Auth authInputRef={this.authInputRef} onHandleUserAuth={this.handleUserAuth} />;
 
     if (isAuthenticated) {
       content = (
