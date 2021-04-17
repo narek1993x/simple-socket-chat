@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 const { UserModel } = require("./User");
+const { RoomModel } = require("./Room");
 const Schema = mongoose.Schema;
 
 const MessageSchema = new Schema({
@@ -41,8 +42,7 @@ async function updateUserPrivateMessage(userId, messageId) {
 
 let MessageModel;
 
-MessageSchema.statics.privateMessage = async function (params) {
-  const { message, userId, directUserId } = params;
+MessageSchema.statics.addPrivateMessage = async function ({ message, userId, directUserId }) {
   if (!userId || !directUserId) return;
 
   try {
@@ -51,10 +51,12 @@ MessageSchema.statics.privateMessage = async function (params) {
       isPrivateMessage: true,
       createdBy: userId,
     }).save();
+
     const withOwner = await MessageModel.findById(newMessage._id).populate({
       path: "createdBy",
       model: "User",
     });
+
     await updateUserPrivateMessage(userId, newMessage._id);
     await updateUserPrivateMessage(directUserId, newMessage._id);
 
@@ -64,11 +66,8 @@ MessageSchema.statics.privateMessage = async function (params) {
   }
 };
 
-MessageSchema.statics.createMessage = async function (params) {
-  const { message, userId, roomId } = params;
-
+MessageSchema.statics.addMessage = async function ({ message, userId, roomId }) {
   if (!userId || !roomId) return;
-  const Room = mongoose.model("Room");
 
   try {
     const newMessage = await new MessageModel({
@@ -76,11 +75,14 @@ MessageSchema.statics.createMessage = async function (params) {
       createdBy: userId,
       room: roomId,
     }).save();
+
     const withOwner = await MessageModel.findById(newMessage._id).populate({
       path: "createdBy",
       model: "User",
     });
-    await Room.findOneAndUpdate({ _id: roomId }, { $addToSet: { messages: newMessage._id } }, { new: true });
+
+    await RoomModel.findOneAndUpdate({ _id: roomId }, { $addToSet: { messages: newMessage._id } }, { new: true });
+
     return withOwner;
   } catch (error) {
     console.error("error when create new message and update user", error);

@@ -4,13 +4,12 @@ const http = require("http").Server(app);
 const io = require("socket.io")(http);
 const mongoose = require("mongoose");
 mongoose.set("useFindAndModify", false);
-require("./models");
-const { loginSocket } = require("./helpers");
 
 const UserController = require("./controllers/User");
 const RoomController = require("./controllers/Room");
+const MessageController = require("./controllers/Message");
 
-const Message = mongoose.model("Message");
+const { loginSocket } = require("./helpers");
 
 // Local DB
 // const MONGO_URI = `mongodb://localhost:27017/simple-socket-chat`;
@@ -82,14 +81,14 @@ io.on("connection", async function (socket) {
   socket.on("query", async ({ action, body, frontEndId }) => {
     switch (action) {
       case "message":
-        const newMessage = await Message.createMessage(body);
+        const newMessage = await MessageController.addMessage(body);
 
         return socket.to(body.roomName).emit("response", {
           action,
           response: newMessage,
         });
       case "private-message":
-        const newPrivateMessage = await Message.privateMessage(body);
+        const newPrivateMessage = await MessageController.addPrivateMessage(body);
 
         return directAction(body.username, action, newPrivateMessage);
       case "add_room":
