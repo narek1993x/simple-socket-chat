@@ -11,7 +11,7 @@ import NewRoomForm from "./components/NewRoomForm";
 import Auth from "./components/Auth";
 
 import { createRoom } from "./store/room/actions";
-import { authUser, setUsers } from "./store/user/actions";
+import { authUser } from "./store/user/actions";
 import { setMessages, setPrivateMessages, addNewMessageByKey } from "./store/message/actions";
 
 class App extends React.Component {
@@ -120,7 +120,7 @@ class App extends React.Component {
     if (!message) return;
 
     let emitData = {
-      action: "message",
+      action: socketActions.MESSAGE,
       body: {
         message,
         userId: currentUser._id,
