@@ -10,7 +10,7 @@ import SendMessageForm from "./components/SendMessageForm";
 import NewRoomForm from "./components/NewRoomForm";
 import Auth from "./components/Auth";
 
-import { createRoom } from "./store/room/actions";
+import { addRoom } from "./store/room/actions";
 import { authUser } from "./store/user/actions";
 import { setMessages, setPrivateMessages, addNewMessageByKey } from "./store/message/actions";
 
@@ -109,7 +109,7 @@ class App extends React.Component {
     socket.emit("query", emitData);
   };
 
-  createRoom = (roomName) => {
+  addRoom = (roomName) => {
     const { dispatch, currentUser } = this.props;
 
     if (!roomName) return;
@@ -119,7 +119,7 @@ class App extends React.Component {
       userId: currentUser._id,
     };
 
-    dispatch(createRoom(body, socketActions.CREATE_ROOM));
+    dispatch(addRoom(body, socketActions.ADD_ROOM));
   };
 
   handleUserAuth = ({ username, password, email, isSignin }) => {
@@ -152,7 +152,7 @@ class App extends React.Component {
             roomName={roomName}
             subscribedUsername={subscribedUsername}
           />
-          <NewRoomForm createRoom={this.createRoom} />
+          <NewRoomForm addRoom={this.addRoom} />
         </div>
       );
     }

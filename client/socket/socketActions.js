@@ -5,7 +5,7 @@ export const MESSAGE = "message";
 export const PRIVATE_MESSAGE = "private-message";
 
 export const SUBSCRIBE_ROOM = "subscribe room";
-export const CREATE_ROOM = "create_room";
+export const ADD_ROOM = "add_room";
 export const LEAVE_ROOM = "leave room";
 
 export const SUBSCRIBE_USER = "subscribe user";

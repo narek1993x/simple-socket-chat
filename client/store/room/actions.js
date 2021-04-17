@@ -3,13 +3,13 @@ import * as socketActions from "../../socket/socketActions";
 import { socketQuery } from "../../socket/socket";
 import { createSubscriptions } from "../../socket/socket";
 
-export const createRoom = (body, queryAction) => {
+export const addRoom = (body, queryAction) => {
   return async (dispatch) => {
     try {
       const newRoom = await socketQuery(body, queryAction);
       dispatch(setNewRoom(newRoom));
     } catch (error) {
-      console.error("createRoom: ", error);
+      console.error("addRoom: ", error);
     }
   };
 };
@@ -30,7 +30,7 @@ export const setNewRoom = (newRoom) => {
 
 createSubscriptions([
   {
-    query: socketActions.CREATE_ROOM,
+    query: socketActions.ADD_ROOM,
     reduxAction: setNewRoom,
   },
 ]);

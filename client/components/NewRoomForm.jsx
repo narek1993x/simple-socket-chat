@@ -1,12 +1,12 @@
-import React, { memo, useState } from 'react';
+import React, { memo, useState } from "react";
 
 const NewRoomForm = memo((props) => {
-  const [roomName, setRoomName] = useState('');
+  const [roomName, setRoomName] = useState("");
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    props.createRoom(roomName);
-    setRoomName('');
+    props.addRoom(roomName);
+    setRoomName("");
   };
 
   return (
