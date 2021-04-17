@@ -9,7 +9,7 @@ class UserController {
     await UserModel.findOneAndUpdate({ username }, { $set: { online: false } }, { new: true });
   }
 
-  static async getPrivateMessages(userId) {
+  static async getUser(userId) {
     return await UserModel.findById(userId).populate({
       path: "privateMessages",
       model: "Message",

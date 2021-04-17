@@ -28,12 +28,9 @@ const RoomSchema = new Schema({
 
 let RoomModel;
 
-RoomSchema.statics.createRoom = async function (params) {
-  const { name, userId } = params;
-
+RoomSchema.statics.addRoom = async function ({ name, userId }) {
   try {
-    const newRoom = await new RoomModel({ name, createdBy: userId }).save();
-    return newRoom;
+    return await new RoomModel({ name, createdBy: userId }).save();
   } catch (error) {
     console.error("error when create new room", error);
   }

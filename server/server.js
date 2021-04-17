@@ -8,9 +8,9 @@ require("./models");
 const { loginSocket } = require("./helpers");
 
 const UserController = require("./controllers/User");
+const RoomController = require("./controllers/Room");
 
 const Message = mongoose.model("Message");
-const Room = mongoose.model("Room");
 
 // Local DB
 // const MONGO_URI = `mongodb://localhost:27017/simple-socket-chat`;
@@ -81,7 +81,6 @@ io.on("connection", async function (socket) {
 
   socket.on("query", async ({ action, body, frontEndId }) => {
     switch (action) {
-      // Message sending actions
       case "message":
         const newMessage = await Message.createMessage(body);
 
@@ -91,46 +90,34 @@ io.on("connection", async function (socket) {
         });
       case "private-message":
         const newPrivateMessage = await Message.privateMessage(body);
-        return directAction(body.username, action, newPrivateMessage);
 
-      // Create new room action
-      case "create_room":
-        const newRoom = await Room.createRoom(body);
+        return directAction(body.username, action, newPrivateMessage);
+      case "add_room":
+        const newRoom = await RoomController.addRoom(body);
 
         return io.emit("response", {
           action,
           response: newRoom,
           frontEndId,
         });
-
-      // Subscribing actions
       case "subscribe room":
-        const currentRoom = await Room.findById(body.id).populate({
-          path: "messages",
-          model: "Message",
-          populate: {
-            path: "createdBy",
-            model: "User",
-          },
-        });
-        // Join to room
+        const currentRoom = await RoomController.getRoom(body.id);
         socket.join(body.roomName);
+
         return socket.emit("response", {
           action,
           response: currentRoom,
         });
       case "subscribe user":
-        const subscribedUser = await UserController.getPrivateMessages(body.id);
+        const subscribedUser = await UserController.getUser(body.id);
 
         return socket.emit("response", {
           action,
           response: subscribedUser,
         });
       case "leave room":
-        // Leave room
         return socket.leave(body.roomName);
 
-      // User adding actions
       case "login":
         if (addedUser) return;
         socket.username = body.username.toLowerCase();
@@ -165,7 +152,6 @@ io.on("connection", async function (socket) {
           addedUser = false;
         }
         break;
-      // Login user with token
       case "login_with_token":
         try {
           const tokenUser = await loginSocket(socket, body.token, frontEndId, true);
@@ -181,7 +167,6 @@ io.on("connection", async function (socket) {
         }
         break;
 
-      // Type handling actions
       case "typing":
         if (body.isDirect) {
           return directAction(body.username, action, {
