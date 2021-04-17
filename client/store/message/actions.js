@@ -1,8 +1,8 @@
 import * as types from "./actionTypes";
 import { createSubscriptions } from "../../socket/socket";
-import { MESSAGE, PRIVATE_MESSAGE } from "../../socket/socketActions";
+import { MESSAGE, PRIVATE_MESSAGE, SUBSCRIBE_ROOM } from "../../socket/socketActions";
 
-export const setMessages = (messages) => {
+export const setMessages = ({ messages }) => {
   return {
     type: types.SET_MESSAGES,
     messages,
@@ -25,6 +25,10 @@ export const addNewMessageByKey = (message, key) => {
 };
 
 createSubscriptions([
+  {
+    query: SUBSCRIBE_ROOM,
+    reduxAction: setMessages,
+  },
   {
     query: MESSAGE,
     reduxAction: addNewMessageByKey,

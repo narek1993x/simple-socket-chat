@@ -4,3 +4,5 @@ export const CREATE_ROOM = "create_room";
 
 export const MESSAGE = "message";
 export const PRIVATE_MESSAGE = "private-message";
+
+export const SUBSCRIBE_ROOM = "subscribe room";
