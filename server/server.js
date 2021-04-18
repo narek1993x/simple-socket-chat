@@ -1,7 +1,15 @@
 require("now-env");
-const app = require("express")();
-const httpServer = require("http").createServer(app);
-const io = require("socket.io")(httpServer);
+const express = require("express");
+const socketIO = require("socket.io");
+
+const PORT = process.env.PORT || 3001;
+
+const server = express()
+  // .use((req, res) => res.sendFile(INDEX, { root: __dirname }))
+  .listen(PORT, () => console.log(`Listening on ${PORT}`));
+
+const io = socketIO(server);
+
 const mongoose = require("mongoose");
 mongoose.set("useFindAndModify", false);
 
@@ -201,6 +209,3 @@ io.on("connection", async function (socket) {
     }
   });
 });
-
-const PORT = process.env.PORT || 3001;
-httpServer.listen(PORT);
