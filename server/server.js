@@ -1,7 +1,7 @@
 require("now-env");
 const app = require("express")();
-const http = require("http").Server(app);
-const io = require("socket.io")(http);
+const httpServer = require("http").createServer(app);
+const io = require("socket.io")(httpServer);
 const mongoose = require("mongoose");
 mongoose.set("useFindAndModify", false);
 
@@ -53,7 +53,7 @@ async function requestMaker(Controller, method, params, username) {
   }
 }
 
-io.origins(["http://localhost:3000"]);
+io.origins(["http://localhost:3000", "https://simple-socket-chat-frontend.vercel.app"]);
 
 io.on("connection", async function (socket) {
   let addedUser = false;
@@ -202,4 +202,5 @@ io.on("connection", async function (socket) {
   });
 });
 
-module.exports = http;
+const PORT = process.env.PORT || 3001;
+httpServer.listen(PORT);

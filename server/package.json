@@ -2,11 +2,11 @@
   "name": "simple-socket-chat-backend",
   "version": "1.0.0",
   "description": "my first socket.io app",
-  "main": "index.js",
+  "main": "./server.js",
   "scripts": {
-    "start:debugger": "node --inspect=0.0.0.0:9229 index.js",
-    "server": "nodemon index.js",
-    "client": "cd client && npm run dev",
+    "start:debugger": "node --inspect=0.0.0.0:9229 ./server.js",
+    "server": "nodemon ./server.js",
+    "client": "cd ../client && npm run dev",
     "start": "concurrently --names \"server,client\" \"npm run server --silent\" \"npm run client --silent\""
   },
   "author": "",
