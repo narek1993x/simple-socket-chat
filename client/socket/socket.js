@@ -3,7 +3,7 @@ import store from "../store";
 import { guid, createQueryData } from "./utils";
 import { SET_ERROR } from "../store/global/actionTypes";
 
-const wsUri = "ws://localhost:3001";
+const wsUri = "ws://simple-socket-chat-backend.herokuapp.com";
 const socket = io.connect(wsUri, { secure: true });
 
 const callbacks = {};
