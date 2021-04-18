@@ -15,6 +15,7 @@ class UserController {
       .populate({
         path: "privateMessages",
         model: "Message",
+        match: { $or: [{ createdBy: userId }, { to: userId }] },
         populate: {
           path: "createdBy",
           model: "User",
@@ -22,9 +23,7 @@ class UserController {
         },
       });
 
-    return currentUserPM.privateMessages.filter(
-      (m) => m.to.toString() === userId || m.createdBy._id.toString() === userId,
-    );
+    return currentUserPM.privateMessages;
   }
 
   static async signin({ username, password }) {
