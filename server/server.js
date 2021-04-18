@@ -41,9 +41,9 @@ function directAction(action, username, response) {
   }
 }
 
-async function requestMaker(Model, action, params, username) {
+async function requestMaker(Controller, method, params, username) {
   try {
-    return await Model[action](params);
+    return await Controller[method](params);
   } catch (error) {
     io.sockets.connected[clients[username].socket].emit("response", {
       action: "error",
