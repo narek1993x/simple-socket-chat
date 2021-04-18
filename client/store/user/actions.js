@@ -35,6 +35,13 @@ export const setCurrentUser = (currentUser) => {
   };
 };
 
+export const subscribeToUser = (subscribedUser) => {
+  return {
+    type: types.SUBSCRIBE_TO_USER,
+    subscribedUser,
+  };
+};
+
 createSubscriptions([
   {
     query: socketActions.USER_JOINED,

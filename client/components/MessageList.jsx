@@ -4,6 +4,12 @@ import { connect } from "react-redux";
 import moment from "moment";
 import Message from "./Message";
 
+function isTypingChecker({ isTyping, typingRoomId, typingUsername, roomId, subscribedUsername }) {
+  return (
+    isTyping && ((typingRoomId && typingRoomId === roomId) || (typingUsername && subscribedUsername === typingUsername))
+  );
+}
+
 class MessageList extends React.Component {
   componentWillUpdate() {
     const node = ReactDOM.findDOMNode(this);
@@ -28,7 +34,14 @@ class MessageList extends React.Component {
       subscribedUsername,
       isTyping,
     } = this.props;
-    const isType = isTyping && typingUsername && (typingRoomId === roomId || subscribedUsername === typingUsername);
+
+    const isType = isTypingChecker({
+      isTyping,
+      typingRoomId,
+      typingUsername,
+      roomId,
+      subscribedUsername,
+    });
 
     if (!roomId && !subscribedUsername) {
       return (

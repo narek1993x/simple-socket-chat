@@ -30,7 +30,7 @@ mongoose.connection
 
 const clients = {};
 
-function directAction(username, action, response) {
+function directAction(action, username, response) {
   if (clients[username]) {
     io.sockets.connected[clients[username].socket].emit("response", {
       action,
@@ -90,7 +90,7 @@ io.on("connection", async function (socket) {
       case "private_message":
         const newPrivateMessage = await MessageController.addPrivateMessage(body);
 
-        return directAction(body.username, action, newPrivateMessage);
+        return directAction(action, body.username, newPrivateMessage);
       case "add_room":
         const newRoom = await RoomController.addRoom(body);
 
@@ -168,7 +168,7 @@ io.on("connection", async function (socket) {
 
       case "typing":
         if (body.isDirect) {
-          return directAction(body.username, action, {
+          return directAction(action, body.username, {
             username: socket.username,
             direct: true,
           });
@@ -183,7 +183,7 @@ io.on("connection", async function (socket) {
         });
       case "stop_typing":
         if (body.isDirect) {
-          return directAction(body.username, action, {
+          return directAction(action, body.username, {
             username: socket.username,
             direct: true,
           });

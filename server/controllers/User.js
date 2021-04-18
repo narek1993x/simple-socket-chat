@@ -10,12 +10,12 @@ class UserController {
   }
 
   static async getUserPrivateMessages(userId, currentUserId) {
-    const currentUserPM = await UserModel.findById(currentUserId)
+    const user = await UserModel.findById(userId)
       .select("privateMessages")
       .populate({
         path: "privateMessages",
         model: "Message",
-        match: { $or: [{ createdBy: userId }, { to: userId }] },
+        match: { $or: [{ createdBy: currentUserId }, { to: currentUserId }] },
         populate: {
           path: "createdBy",
           model: "User",
@@ -23,7 +23,7 @@ class UserController {
         },
       });
 
-    return currentUserPM.privateMessages;
+    return user.privateMessages;
   }
 
   static async signin({ username, password }) {

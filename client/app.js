@@ -11,7 +11,7 @@ import NewRoomForm from "./components/NewRoomForm";
 import Auth from "./components/Auth";
 
 import { addRoom } from "./store/room/actions";
-import { authUser } from "./store/user/actions";
+import { authUser, subscribeToUser } from "./store/user/actions";
 import { setMessages, setPrivateMessages, addNewMessageByKey } from "./store/message/actions";
 
 class App extends React.Component {
@@ -19,7 +19,6 @@ class App extends React.Component {
     super(props);
 
     this.state = {
-      subscribedUser: null,
       roomName: "",
       roomId: null,
       isUserNameSet: false,
@@ -55,12 +54,14 @@ class App extends React.Component {
         id,
       },
     };
-    this.setState({ roomId: id, roomName, messages: [], subscribedUser: null });
+    this.setState({ roomId: id, roomName });
     this.props.dispatch(setMessages([]));
+    this.props.dispatch(subscribeToUser(null));
+
     socket.emit("query", emitData);
   };
 
-  subscribeToUser = (user) => {
+  handleSubscribeToUser = (user) => {
     const { currentUser } = this.props;
 
     const emitData = {
@@ -70,18 +71,20 @@ class App extends React.Component {
         currentUserId: currentUser._id,
       },
     };
+
     this.setState({
-      subscribedUser: user,
       roomId: null,
       roomName: "",
     });
+
     this.props.dispatch(setPrivateMessages([]));
+    this.props.dispatch(subscribeToUser(user));
     socket.emit("query", emitData);
   };
 
   sendMessage = (message) => {
-    const { roomName, roomId, subscribedUser } = this.state;
-    const { currentUser, username } = this.props;
+    const { roomName, roomId } = this.state;
+    const { currentUser, username, subscribedUser } = this.props;
 
     if (!message) return;
 
@@ -101,8 +104,8 @@ class App extends React.Component {
         body: {
           message,
           directUserId: subscribedUser._id,
-          userId: currentUser._id,
           username: subscribedUser.username,
+          userId: currentUser._id,
         },
       };
     }
@@ -134,9 +137,9 @@ class App extends React.Component {
   };
 
   render() {
-    const { roomId, subscribedUser, roomName } = this.state;
+    const { roomId, roomName } = this.state;
 
-    const { isAuthenticated, username } = this.props;
+    const { isAuthenticated, subscribedUser, username } = this.props;
 
     const subscribedUserId = subscribedUser && subscribedUser._id;
     const subscribedUsername = subscribedUser && subscribedUser.username;
@@ -147,7 +150,11 @@ class App extends React.Component {
       content = (
         <div className="app">
           <RoomList currentRoomId={roomId} subscribeToRoom={this.subscribeToRoom} />
-          <OnlineUserList username={username} subscribedUser={subscribedUser} subscribeToUser={this.subscribeToUser} />
+          <OnlineUserList
+            username={username}
+            subscribedUser={subscribedUser}
+            subscribeToUser={this.handleSubscribeToUser}
+          />
           <MessageList roomId={roomId} subscribedUsername={subscribedUsername} currentUserId={username} />
           <SendMessageForm
             disabled={!roomId && !subscribedUserId}
@@ -169,4 +176,5 @@ export default connect((state) => ({
   currentUser: state.user.currentUser,
   username: state.user.currentUser.username,
   isAuthenticated: state.user.isAuthenticated,
+  subscribedUser: state.user.subscribedUser,
 }))(App);

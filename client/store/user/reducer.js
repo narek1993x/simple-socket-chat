@@ -5,6 +5,7 @@ import { updateObject } from "../../helpers/utils";
 const initialState = {
   users: [],
   currentUser: {},
+  subscribedUser: null,
   isAuthenticated: false,
 };
 
@@ -15,6 +16,8 @@ const reducer = (state = initialState, action) => {
     case types.SET_CURRENT_USER:
       const currentUser = get(action, "currentUser", null);
       return updateObject(state, { currentUser, isAuthenticated: !!currentUser });
+    case types.SUBSCRIBE_TO_USER:
+      return updateObject(state, { subscribedUser: action.subscribedUser });
     default:
       return state;
   }
