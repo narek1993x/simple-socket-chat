@@ -13,40 +13,42 @@ const getUser = async (token) => {
   }
 };
 
+const loginSocket = async (socket, token, frontEndId, isFromToken) => {
+  const user = await getUser(token);
+
+  if (isFromToken) {
+    await UserController.updateStatus(user.username, true);
+  }
+
+  const users = await UserController.getAll();
+  const rooms = await RoomController.getAll();
+
+  let currentUser;
+  if (user && user.username) {
+    currentUser = users.find((u) => u.username === user.username);
+  }
+
+  socket.emit("response", {
+    action: "login",
+    frontEndId,
+    response: {
+      users,
+      rooms,
+      currentUser,
+      token,
+    },
+  });
+
+  socket.broadcast.emit("response", {
+    action: "user_joined",
+    response: {
+      users,
+    },
+  });
+
+  return currentUser;
+};
+
 module.exports = {
-  loginSocket: async function (socket, token, frontEndId, isFromToken) {
-    const user = await getUser(token);
-
-    if (isFromToken) {
-      await UserController.updateStatus(user.username, true);
-    }
-
-    const users = await UserController.getAll();
-    const rooms = await RoomController.getAll();
-
-    let currentUser;
-    if (user && user.username) {
-      currentUser = users.find((u) => u.username === user.username);
-    }
-
-    socket.emit("response", {
-      action: "login",
-      frontEndId,
-      response: {
-        users,
-        rooms,
-        currentUser,
-        token,
-      },
-    });
-
-    socket.broadcast.emit("response", {
-      action: "user joined",
-      response: {
-        users,
-      },
-    });
-
-    return currentUser;
-  },
+  loginSocket,
 };

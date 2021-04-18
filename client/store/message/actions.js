@@ -27,14 +27,14 @@ export const breakTyping = () => {
   };
 };
 
-export const setMessages = ({ messages }) => {
+export const setMessages = (messages) => {
   return {
     type: types.SET_MESSAGES,
     messages,
   };
 };
 
-export const setPrivateMessages = ({ privateMessages }) => {
+export const setPrivateMessages = (privateMessages) => {
   return {
     type: types.SET_PRIVATE_MESSAGES,
     privateMessages,

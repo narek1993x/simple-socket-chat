@@ -93,7 +93,7 @@ UserSchema.statics.signin = async function ({ username, password }) {
     }
 
     await UserModel.findOneAndUpdate({ username }, { $set: { online: true } }, { new: true });
-    return createToken(user, process.env.SECRET, "1hr");
+    return createToken(user, process.env.SECRET, "23hr");
   } catch (error) {
     console.error("error when add new user", error);
     throw error;

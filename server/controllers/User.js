@@ -9,15 +9,22 @@ class UserController {
     await UserModel.findOneAndUpdate({ username }, { $set: { online } }, { new: true });
   }
 
-  static async getUser(userId) {
-    return await UserModel.findById(userId).populate({
-      path: "privateMessages",
-      model: "Message",
-      populate: {
-        path: "createdBy",
-        model: "User",
-      },
-    });
+  static async getUserPrivateMessages(userId, currentUserId) {
+    const currentUserPM = await UserModel.findById(currentUserId)
+      .select("privateMessages")
+      .populate({
+        path: "privateMessages",
+        model: "Message",
+        populate: {
+          path: "createdBy",
+          model: "User",
+          select: "username",
+        },
+      });
+
+    return currentUserPM.privateMessages.filter(
+      (m) => m.to.toString() === userId || m.createdBy._id.toString() === userId,
+    );
   }
 
   static async signin({ username, password }) {

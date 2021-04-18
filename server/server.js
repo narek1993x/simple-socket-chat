@@ -63,7 +63,7 @@ io.on("connection", async function (socket) {
       await UserController.updateStatus(socket.username, false);
 
       socket.broadcast.emit("response", {
-        action: "user left",
+        action: "user_left",
         response: {
           users: await UserController.getAll(),
         },
@@ -87,7 +87,7 @@ io.on("connection", async function (socket) {
           action,
           response: newMessage,
         });
-      case "private-message":
+      case "private_message":
         const newPrivateMessage = await MessageController.addPrivateMessage(body);
 
         return directAction(body.username, action, newPrivateMessage);
@@ -100,21 +100,21 @@ io.on("connection", async function (socket) {
           frontEndId,
         });
       case "subscribe_room":
-        const currentRoom = await RoomController.getRoom(body.id);
+        const roomMessages = await RoomController.getRoomMessages(body.id);
         socket.join(body.roomName);
 
         return socket.emit("response", {
           action,
-          response: currentRoom,
+          response: roomMessages,
         });
       case "subscribe_user":
-        const subscribedUser = await UserController.getUser(body.id);
+        const privateMessages = await UserController.getUserPrivateMessages(body.id, body.currentUserId);
 
         return socket.emit("response", {
           action,
-          response: subscribedUser,
+          response: privateMessages,
         });
-      case "leave room":
+      case "leave_room":
         return socket.leave(body.roomName);
 
       case "login":
@@ -181,7 +181,7 @@ io.on("connection", async function (socket) {
             roomName: body.roomName,
           },
         });
-      case "stop typing":
+      case "stop_typing":
         if (body.isDirect) {
           return directAction(body.username, action, {
             username: socket.username,

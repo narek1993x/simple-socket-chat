@@ -22,9 +22,10 @@ const MessageSchema = new Schema({
     required: true,
     ref: "User",
   },
-  isPrivateMessage: {
-    type: Boolean,
-    default: false,
+  to: {
+    type: Schema.Types.ObjectId,
+    ref: "User",
+    required: false,
   },
 });
 
@@ -48,8 +49,8 @@ MessageSchema.statics.addPrivateMessage = async function ({ message, userId, dir
   try {
     const newMessage = await new MessageModel({
       message,
-      isPrivateMessage: true,
       createdBy: userId,
+      to: directUserId,
     }).save();
 
     const withOwner = await MessageModel.findById(newMessage._id).populate({

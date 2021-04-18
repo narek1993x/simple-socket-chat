@@ -9,15 +9,19 @@ class RoomController {
     return await RoomModel.addRoom(params);
   }
 
-  static async getRoom(roomId) {
-    return await RoomModel.findById(roomId).populate({
-      path: "messages",
-      model: "Message",
-      populate: {
-        path: "createdBy",
-        model: "User",
-      },
-    });
+  static async getRoomMessages(roomId) {
+    const room = await RoomModel.findById(roomId)
+      .select("messages")
+      .populate({
+        path: "messages",
+        model: "Message",
+        populate: {
+          path: "createdBy",
+          model: "User",
+        },
+      });
+
+    return room.messages;
   }
 }
 

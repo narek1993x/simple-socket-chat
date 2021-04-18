@@ -56,15 +56,18 @@ class App extends React.Component {
       },
     };
     this.setState({ roomId: id, roomName, messages: [], subscribedUser: null });
-    this.props.dispatch(setMessages({ messages: [] }));
+    this.props.dispatch(setMessages([]));
     socket.emit("query", emitData);
   };
 
   subscribeToUser = (user) => {
+    const { currentUser } = this.props;
+
     const emitData = {
       action: socketActions.SUBSCRIBE_USER,
       body: {
         id: user._id,
+        currentUserId: currentUser._id,
       },
     };
     this.setState({
@@ -72,7 +75,7 @@ class App extends React.Component {
       roomId: null,
       roomName: "",
     });
-    this.props.dispatch(setPrivateMessages({ privateMessages: [] }));
+    this.props.dispatch(setPrivateMessages([]));
     socket.emit("query", emitData);
   };
 
